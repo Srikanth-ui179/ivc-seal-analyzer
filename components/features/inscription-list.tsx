@@ -1,0 +1,5 @@
+import { EvidenceBadge } from "@/components/ui/evidence-badge";
+import { SignGlyph } from "@/components/ui/sign-glyph";
+import { inscriptions } from "@/data/mock-research";
+
+export function InscriptionList() { return <div className="mt-9 space-y-4">{inscriptions.map((item) => <article key={item.id} className="panel grid gap-5 p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center"><div className="flex gap-2">{item.glyphs.slice(0, 3).map((glyph, index) => <SignGlyph key={`${glyph}-${index}`} glyph={glyph} size="sm" />)}</div><div><div className="flex flex-wrap items-center gap-3"><h2 className="font-display text-2xl">{item.id}</h2><EvidenceBadge kind="Archaeological record" /></div><p className="mt-2 text-sm text-ink/70">{item.site}, {item.region} · {item.objectType} · {item.material}</p><p className="mt-2 text-sm leading-6 text-ink/58">{item.context}</p></div><div className="sm:text-right"><p className="data-label">Sign sequence</p><p className="mt-2 font-display text-xl">{item.glyphs.join(" · ")}</p></div></article>)}</div>; }

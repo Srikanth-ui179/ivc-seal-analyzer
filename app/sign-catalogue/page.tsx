@@ -1,0 +1,4 @@
+import { CatalogueGrid } from "@/components/features/catalogue-grid";
+import { EvidenceBadge } from "@/components/ui/evidence-badge";
+
+export default function CataloguePage() { return <div className="page-shell py-14 sm:py-20"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow">Reference catalogue</p><h1 className="mt-3 display-title">Sign forms in context.</h1><p className="mt-5 max-w-2xl leading-7 text-ink/70">A visual index of mock sign records, occurrence counts, position statistics, and observed associations.</p></div><EvidenceBadge kind="Computational observation" /></div><div className="mt-10 border-l-2 border-clay bg-sandstone/20 p-5 text-sm leading-6 text-ink/70">Identifiers and statistics are prototype data. A production catalogue should cite the specific sign-list convention and corpus provenance used for every record.</div><CatalogueGrid /></div>; }
