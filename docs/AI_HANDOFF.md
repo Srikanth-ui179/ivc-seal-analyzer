@@ -69,6 +69,9 @@ Copy-Item .env.example .env
 .\scripts\cisi-ingest.ps1 -DryRun
 .\scripts\cisi-ingest.ps1 -Promote
 
+# Remote migrations (for hosted PostgreSQL / Neon without Docker)
+node scripts/migrate-remote.mjs
+
 # TypeScript checks & Next.js production build
 pnpm tsc --noEmit
 pnpm build

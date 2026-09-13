@@ -51,7 +51,28 @@ The server-side TypeScript repository lives in `lib/db/phase1-repository.ts` and
 
 ## Migration policy
 
-Run migrations through `scripts/db-migrate.ps1`. It records completed files in `schema_migrations`, executes files in lexical order, and skips already-applied migrations. Do not edit a migration after it has been applied to a shared database; add a new numbered migration instead.
+### Local development (Docker)
+Local development continues to use Docker Desktop and PostgreSQL via Docker Compose:
+
+```powershell
+./scripts/db-migrate.ps1
+```
+
+It records completed files in `schema_migrations`, executes files in lexical order, and skips already-applied migrations.
+
+### Production & Remote environments (Hosted PostgreSQL / Neon)
+Production deployments on Vercel use a hosted PostgreSQL instance (such as Neon).
+
+To apply migrations 0001–0015 to a remote PostgreSQL database without requiring Docker or PowerShell:
+
+```bash
+DATABASE_URL="postgresql://user:password@endpoint.region.aws.neon.tech/neondb?sslmode=require" node scripts/migrate-remote.mjs
+```
+
+Requirements and safeguards:
+- `DATABASE_URL` is required in the environment. For serverless platforms (e.g. Vercel), use the provider's connection pooler URL (e.g. Neon `-pooler` endpoint).
+- `scripts/migrate-remote.mjs` is cross-platform, idempotent, tracks versions in `schema_migrations` consistently with local scripts, and executes standard SQL without Docker.
+- **Security**: Real database credentials and connection secrets must NEVER be committed to Git. Store them only in local untracked `.env` or in Vercel project environment variables.
 
 ## Scope and provenance rules
 

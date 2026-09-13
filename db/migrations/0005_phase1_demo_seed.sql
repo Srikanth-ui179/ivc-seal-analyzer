@@ -1,3 +1,6 @@
--- The seed is intentionally isolated from the schema. It contains only records
--- whose stable IDs begin DEMO- and whose content explicitly identifies them as synthetic.
-\ir ../seeds/phase1_demo.sql
+BEGIN;
+
+-- Legacy development fixture retired. The application uses the real research corpus (e.g. CISI).
+-- This migration is maintained as a clean no-op to preserve migration sequence compatibility across environments.
+
+COMMIT;

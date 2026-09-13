@@ -20,7 +20,12 @@ function getPool() {
   }
 
   if (!global.indusScriptDatabasePool) {
-    global.indusScriptDatabasePool = new Pool({ connectionString });
+    global.indusScriptDatabasePool = new Pool({
+      connectionString,
+      max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
   }
 
   return global.indusScriptDatabasePool;
