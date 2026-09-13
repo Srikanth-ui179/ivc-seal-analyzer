@@ -2,7 +2,13 @@
 
 ## Current State Snapshot
 
-IndusScript AI is a Next.js research platform with a stable, source-aware PostgreSQL Phase 1 archaeological/catalogue foundation. PostgreSQL 16 runs in Docker Compose. The `/explorer` page is server-rendered and reads Phase 1 data through `lib/db/phase1-repository.ts`; it currently shows a synthetic, clearly labelled `DEMO-INS-0001` fixture. Phase 2 computational analysis and Phase 3 AI/ML tables are not implemented. Do not invent real archaeological data, claim translation/decipherment, or allow future outputs to rewrite Phase 1 records.
+IndusScript AI is a Next.js research platform with a stable, source-aware PostgreSQL Phase 1 archaeological/catalogue foundation and Phase 2 dataset selection, corpus provenance architecture, and corpus ingestion pipelines (migrations `0001`–`0014`). PostgreSQL 16 runs in Docker Compose. The `/explorer` page reads Phase 1 data through `lib/db/phase1-repository.ts`; `/sign-catalogue` reads distinct visual sign forms with corpus occurrence frequencies; `/research/datasets` reads frozen Phase 2 corpus snapshots.
+
+**Real Ingested Corpus:**
+- **Corpus Release:** `REL-CISI-MAYIG-V1` (v2024.1, MIT License, Michael Carlson digitization of Parpola et al. CISI).
+- **Entities Promoted (`record_scope = 'research'`):** 179 Mohenjo-daro artefacts, 179 inscriptions, 179 sign sequences, 1,003 character-level sign occurrences, 182 distinct Parpola sign types (`cisi_parpola:P-NNN`), and 179 catalogue identifiers.
+- **Legacy demo fixture:** Removed by the forward-only cleanup migration. `record_scope = 'demo'` remains an internal integrity/testing capability only and is not exposed by the research UI.
+- **Sign ordering:** Strict Right-to-Left source-recorded order without semantic, linguistic, or phonetic claims.
 
 ## Mandatory reading and working rules
 
@@ -18,8 +24,8 @@ IndusScript AI is a Next.js research platform with a stable, source-aware Postgr
 - Do not introduce translation, decipherment, language, semantic, or phonetic claims for Indus signs.
 - Do not invent archaeological data and present it as real.
 - Synthetic records must retain `record_scope = demo`, `DEMO-` stable IDs, and visible UI labelling.
+- Real corpus records must retain `record_scope = research` and source provenance links.
 - Do not remove the provenance/evidence separation.
-- Do not modify Phase 1 archaeological records merely to accommodate an AI hypothesis or model output.
 - Computational outputs must remain separate from source-backed archaeological records.
 - Model predictions must be versioned, reviewable, uncertainty-aware, and linked to their model/dataset context.
 - Hypotheses must remain explicitly labelled hypotheses with evidence links; they are not facts.
@@ -28,14 +34,10 @@ IndusScript AI is a Next.js research platform with a stable, source-aware Postgr
 
 Phase 1 is the stable source-of-truth layer: sources, sites, objects, inscriptions, visual signs, sequences, occurrences, and source assertions. Preserve its foreign keys, scope controls, assertion trigger, and migrations.
 
-Before implementing a new phase, state which boundary the change belongs to:
-
 - **Phase 1:** source-backed archaeological/catalogue record and read UX.
-- **Phase 2:** reproducible computational measurements; never archaeological truth.
+- **Phase 2:** frozen dataset selection, authorized corpus delivery/staging provenance, corpus ingestion pipelines, and reproducible computational measurements; never archaeological truth.
 - **Phase 3:** versioned model runs/predictions and review workflow.
 - **Phase 4:** evaluation and research-review tooling.
-
-Do not implement Phase 2 or later merely because a UI placeholder exists.
 
 ## Commands
 
@@ -48,18 +50,27 @@ Copy-Item .env.example .env
 # Start PostgreSQL, wait for health, and apply only unapplied migrations.
 .\scripts\db-migrate.ps1
 
-# Check database reachability and migration/demo status.
+# Check database reachability and migration status.
 .\scripts\db-health.ps1
 
-# Verify Phase 1 fixture, foreign keys, polymorphic assertions, and scope controls.
+# Verify Phase 1 foreign keys, polymorphic assertions, scope controls, and absence of persistent demo fixtures.
 .\scripts\db-verify-phase1.ps1
 
-# Install exact lockfile dependencies and build the approved Sharp native dependency.
-pnpm install --frozen-lockfile
-pnpm rebuild sharp
+# Verify frozen Phase 2 dataset fixture and its scope/immutability controls.
+.\scripts\db-verify-phase2-datasets.ps1
 
-# Run and validate the web application.
-pnpm dev
+# Verify Phase 2 corpus delivery, staging, and provenance integrity rules.
+.\scripts\db-verify-corpus-provenance.ps1
+
+# Verify ingestion pipeline staging, state transitions, duplicate preservation, and rollback.
+.\scripts\db-verify-ingestion-pipeline.ps1
+
+# Run CISI Corpus Ingestion (dry-run or promote)
+.\scripts\cisi-ingest.ps1 -DryRun
+.\scripts\cisi-ingest.ps1 -Promote
+
+# TypeScript checks & Next.js production build
+pnpm tsc --noEmit
 pnpm build
 ```
 
@@ -77,12 +88,11 @@ Do not rename `DATABASE_URL` to a `NEXT_PUBLIC_` variable.
 
 ## Known limitations
 
-- The database currently contains only one synthetic demo data path; no real archaeological corpus has been imported.
-- Explorer is the only database-backed frontend proof of concept; other pages retain presentational/mock UI data.
-- There are no detail routes, authentication, authoring UI, automated application tests, or production deployment configuration.
-- Phase 2/3 schemas and services do not exist.
+- The active research corpus covers 179 Mohenjo-daro artefacts (M-1 through M-199) from the open WIP CISI digitization. It is not the complete multi-site corpus.
+- Unrecorded fields (material, exact dimensions, excavation strata) remain NULL rather than fabricated.
+- Analysis runs, n-gram positional entropy, co-occurrence statistics, and Phase 3 machine learning models do not exist yet.
 - There is no claim of sign interpretation, translation, or decipherment.
 
 ## Recommended next milestone
 
-Build read-only detail routes for Phase 1 inscriptions, signs, objects, and sites using the existing repository functions. Keep demo labelling, provenance visibility, and database-only archaeological display intact. Do not introduce computational or AI tables in that milestone.
+Implement Phase 2 computational measurement modules (e.g. sign frequency distributions, n-gram co-occurrences, positional entropy, and sequence length distributions) backed by frozen dataset versions, strictly separating statistical observations from archaeological facts.

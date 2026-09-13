@@ -14,16 +14,18 @@ No synthetic/demo record may be presented as archaeological evidence.
 
 ## Current phase
 
-**Phase 1 — archaeological and catalogue data foundation — complete locally.**
+**Phase 1 is complete locally. Phase 2 has started with versioned dataset selection.**
 
 The repository currently includes:
 
 - A Next.js research interface.
 - PostgreSQL 16 via Docker Compose.
 - A stable Phase 1 archaeological/catalogue schema and source-assertion model.
-- Synthetic, visibly marked `DEMO-` fixtures only; no fabricated archaeological data.
+- An authorized CISI research corpus; no fabricated archaeological records.
 - A server-only TypeScript PostgreSQL repository.
 - A database-backed Inscription Explorer proof of concept.
+- Read-only Phase 1 detail routes for inscriptions, signs, objects, and sites.
+- Frozen, explicitly scoped dataset versions that snapshot Phase 1 inscription selection for future reproducible analysis.
 
 ## Long-term direction
 

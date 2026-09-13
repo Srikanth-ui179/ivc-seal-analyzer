@@ -108,6 +108,18 @@ export type SignSummary = {
   catalogueCode: string;
   visualLabel: string;
   glyphSvg: string | null;
+  frequency?: number;
+};
+
+export type SignOccurrenceDetail = {
+  id: string;
+  positionIndex: number;
+  identificationStatus: string;
+  inscriptionId: string;
+  inscriptionStableId: string;
+  surfaceLabel: string;
+  objectStableId: string;
+  objectId: string;
 };
 
 export type SignDetail = SignSummary & {
@@ -116,9 +128,36 @@ export type SignDetail = SignSummary & {
   parentSign: Pick<SignSummary, "id" | "stableId" | "catalogueNamespace" | "catalogueCode" | "visualLabel"> | null;
   createdAt: Date;
   updatedAt: Date;
+  occurrenceCount?: number;
+  occurrences?: SignOccurrenceDetail[];
 };
 
 export type SignSequenceDetail = SequenceSummary & {
   inscription: Pick<InscriptionSummary, "id" | "stableId" | "surfaceLabel" | "recordScope">;
   occurrences: SignOccurrence[];
+};
+
+export type CatalogueIdentifierSummary = {
+  catalogueNamespace: string;
+  identifierText: string;
+  sourceLocator: string | null;
+  isPrimary: boolean;
+};
+
+export type CorpusStatistics = {
+  totalInscriptions: number;
+  researchInscriptions: number;
+  totalObjects: number;
+  totalSites: number;
+  totalSignSequences: number;
+  totalSignOccurrences: number;
+  totalDistinctSigns: number;
+  totalCatalogueIdentifiers: number;
+  totalSources: number;
+  releases: Array<{
+    releaseLabel: string;
+    deliveryVersion: string;
+    providerName: string;
+    rightsSummary: string | null;
+  }>;
 };

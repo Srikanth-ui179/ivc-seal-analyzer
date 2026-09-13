@@ -14,13 +14,15 @@ This roadmap is paced for a student building alongside college work, DSA practic
 
 ## Phase 2 — computational analysis
 
-**Status: planned. Target: months 3–5.**
+**Status: in progress. Target: months 3–5.**
 
-- Define versioned corpus/dataset selection.
+- Define versioned corpus/dataset selection. **Implemented in the repository:** frozen, scope-checked Phase 1 inscription snapshots with a read-only catalogue.
+- Authorized corpus delivery, staging, and provenance foundation. **Implemented in the repository:** migrations `0010`–`0014`, release metadata, immutable raw staging rows, catalogue identifiers, object relationships, visual sign variants, expanded assertion subjects, and verification suite.
+- M77 / IDF-80 corpus ingestion pipeline. **Implemented in the repository:** parser, validator, staging and transactional promotion services, specification (`docs/M77_INGESTION_SPECIFICATION.md`), CLI runner, and verification tests. *Real corpus import is awaiting authorized source file placement at `data/corpus/m77/m77_texts.csv`.*
 - Add reproducible, parameterized analysis runs.
 - Implement simple descriptive statistics: sign frequency, sequence length, positional distribution, and co-occurrence.
 - Present computational observations as measurements with methods and uncertainty, never as translations.
-- Add tests and benchmark fixtures using only clearly labelled synthetic or properly sourced records.
+- Add tests using transaction-scoped synthetic fixtures or properly sourced records; do not persist demo archaeological records in the research database.
 
 ## Phase 3 — AI/ML capabilities
 
