@@ -172,7 +172,7 @@ export async function askResearchAssistant(
 
     case "sign_frequency":
       evidence = await getSignFrequency(intent.signCode);
-      if (intent.signCode) newContext.activeSign = intent.signCode;
+      newContext.activeSign = intent.signCode || "P324";
       newContext.lastTool = "getSignFrequency";
       newContext.lastTopic = "frequency";
       break;
