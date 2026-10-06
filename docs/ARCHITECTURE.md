@@ -158,6 +158,17 @@ Interactive exploration modules:
 - **Structural Outlier Explorer**: rule-based inspection of statistical outliers (length ≥ 10, multiple internal duplicates, hapax legomena density) with transparent criteria and direct links to `/explorer/[id]`.
 - **Evidence Traceability Guarantee**: Every computational observation provides direct links to the physical seals and digitized records responsible for that observation.
 
+### Phase 2 multi-site research foundation & provenance register (V2.5)
+
+V2.5 establishes the multi-site computational foundation, enriched source provenance schema, and corpus register without fabricating data or breaking frozen dataset immutability:
+
+- **Source Provenance Schema (`db/migrations/0018_...`)**: Extended `sources` table to capture archive/repository (`repository_or_archive`), license framework (`licence_name`, `licence_url`), corpus scope (`corpus_scope`), archaeological scope (`archaeological_scope`), catalogue system (`catalogue_system`), transcription system (`transcription_system`), sign numbering convention (`sign_numbering_convention`), checksums, limitations, and bibliographic notes.
+- **Corpus Sites vs. Reference-Only Sites**: Clarifies the epigraphic boundary between **Corpus Sites** (sites with active, verified inscription sequences in the frozen dataset) and **Reference-Only Sites** (geographic benchmark datums from Possehl 2002, ASI, and UNESCO with published coordinates but 0 ingested corpus sequences). Coordinates on the map or in the database never imply corpus membership.
+- **Dynamic Dataset Breakdown (`lib/db/dataset-version-repository.ts`)**: Evaluates site composition and source provenance dynamically via relational joins through `dataset_version_inscriptions`, ensuring `DATASET-CISI-MOHENJODARO-V1` remains permanently frozen and immutable.
+- **Multi-Site Analysis Engine & Safeguard (`lib/db/multisite-repository.ts`)**: Implements `getMultiSiteReport()`. If $\ge 2$ corpus sites exist, it computes cross-site metrics (inscription counts, token counts, vocabulary size, length distributions, shared vs. site-specific signs). If $< 2$ corpus sites exist, cross-site comparative statistics are strictly gated and held, with an explicit methodological disclosure explaining that comparative claims require an authorized, verified second site corpus.
+- **Corpus & Sites Dashboard View (`components/dashboard/sites-explorer.tsx`)**: Integrates into `/research/dashboard?tab=sites`, providing researchers with full visibility into dataset composition, active corpus sites, reference benchmarks, primary sources, and licensing.
+- **Corpus Register & Detail Enhancement (`app/research/datasets/`, `app/research/datasets/[id]`)**: Renders full bibliographic source cards, licensing links, catalogue systems, site breakdown tables, and member inscription rosters.
+
 ### Not implemented
 
 The following are intentionally **not implemented**:
@@ -167,7 +178,7 @@ The following are intentionally **not implemented**:
 - Directional entropy or information-theoretic metrics requiring un-truncated physical grounding.
 - Model runs, embeddings, clustering, and neural network predictions.
 - AI hypotheses and hypothesis evidence.
-- Cross-site statistical comparisons (corpus currently restricted to Mohenjo-daro M-1..M-199).
+- Fabricated cross-site statistical comparisons (cross-site comparative statistics are held until an authorized second site is ingested and verified).
 - Semantic or phonetic assignments.
 
 When introduced in future phases, they must be their own versioned tables and services. They may reference Phase 1 stable IDs and evidence, but must not mutate archaeological facts, source assertions, visual catalogue records, or published sequence alternatives.

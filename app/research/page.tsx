@@ -129,8 +129,17 @@ export default function ResearchPage() {
         </div>
 
         <div className="panel mt-6 p-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div>
+              <h3 className="font-display text-lg font-bold text-ink">Corpus &amp; Sites Register</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Inspect dataset composition, active corpus sites vs. reference benchmark sites, primary source licensing, and multi-site readiness.
+              </p>
+              <Link href="/research/dashboard?tab=sites" className="mt-3 inline-block text-xs font-semibold text-clay hover:underline">
+                Explore corpus sites →
+              </Link>
+            </div>
+            <div className="border-t border-ink/10 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
               <h3 className="font-display text-lg font-bold text-ink">Sign &amp; Transition Profiles</h3>
               <p className="mt-1 text-xs text-ink/70">
                 Inspect formal positional skew, early vs late distributions, and immediate predecessor/successor transition probabilities for any sign.
@@ -139,7 +148,7 @@ export default function ResearchPage() {
                 Explore signs →
               </Link>
             </div>
-            <div className="border-t border-ink/10 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <div className="border-t border-ink/10 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
               <h3 className="font-display text-lg font-bold text-ink">Motifs &amp; Subsequences</h3>
               <p className="mt-1 text-xs text-ink/70">
                 Identify recurring contiguous trigrams, 4-grams, and prefix-like combinations, with complete enumeration of matching seals.
@@ -148,7 +157,7 @@ export default function ResearchPage() {
                 Explore motifs →
               </Link>
             </div>
-            <div className="border-t border-ink/10 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <div className="border-t border-ink/10 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
               <h3 className="font-display text-lg font-bold text-ink">Duplicates &amp; Outliers</h3>
               <p className="mt-1 text-xs text-ink/70">
                 Examine exact identical full sequences, Levenshtein distance = 1 near-duplicate pairs, and transparent mathematical outlier sequences.

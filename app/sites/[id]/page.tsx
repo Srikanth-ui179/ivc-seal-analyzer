@@ -26,6 +26,36 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
           />
         </div>
 
+        {/* Corpus Site vs. Reference Benchmark Status Callout */}
+        <div className={`mt-6 border-l-2 p-4 text-xs leading-relaxed ${
+          site.objectsCount > 0
+            ? "border-moss bg-moss/5 text-ink/85"
+            : "border-sandstone bg-sandstone/25 text-ink/80"
+        }`}>
+          <div className="flex items-center gap-2 font-semibold">
+            <span className={`inline-block rounded px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold ${
+              site.objectsCount > 0
+                ? "bg-moss/20 text-moss"
+                : "bg-ink/10 text-ink/70"
+            }`}>
+              {site.objectsCount > 0 ? "Active Corpus Site" : "Reference-Only Geographic Benchmark"}
+            </span>
+          </div>
+          <p className="mt-2 text-ink/75">
+            {site.objectsCount > 0
+              ? `This archaeological site has ${site.objectsCount} inscribed object(s) in the database and is represented in the frozen research dataset.`
+              : `This archaeological site is registered as a published reference datum (coordinates and regional classification), but has 0 digitized inscription sequences in the current corpus snapshot. Its coordinates provide geographic context on the archaeological map, but its material is not included in computational sign analysis.`}
+          </p>
+          <div className="mt-3 flex items-center gap-4 text-xs font-semibold">
+            <Link href="/map" className="text-clay hover:underline">
+              🗺️ Locate on Archaeological Map →
+            </Link>
+            <Link href="/research/dashboard?tab=sites" className="text-clay hover:underline">
+              🏛️ Corpus &amp; Sites Register →
+            </Link>
+          </div>
+        </div>
+
         <section className="panel mt-8 max-w-3xl p-6">
           <p className="data-label">Recorded site information</p>
           <dl className="mt-5 grid gap-5 text-sm sm:grid-cols-2">
@@ -62,6 +92,19 @@ export default async function SiteDetailPage({ params }: { params: Promise<{ id:
             </div>
           )}
         </section>
+
+        {/* If 0 objects, show an explicit notice */}
+        {site.objectsCount === 0 && (
+          <section className="panel mt-8 max-w-3xl p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-xl font-bold text-ink">Corpus Inscriptions</h2>
+              <span className="font-mono text-xs text-ink/50">0 records</span>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-ink/70">
+              No machine-readable inscription sequences from {site.canonicalName} have been ingested or verified under an open research licence. When legitimate, licensed transcriptions become available, this site can be promoted to an active corpus site via a new dataset version.
+            </p>
+          </section>
+        )}
 
         {/* Objects from this site */}
         {site.objects && site.objects.length > 0 && (

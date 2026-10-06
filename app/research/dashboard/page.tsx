@@ -6,11 +6,13 @@ import { TransitionExplorer } from "@/components/dashboard/transition-explorer";
 import { MotifExplorer } from "@/components/dashboard/motif-explorer";
 import { DuplicateExplorer } from "@/components/dashboard/duplicate-explorer";
 import { OutlierExplorer } from "@/components/dashboard/outlier-explorer";
+import { SitesExplorer } from "@/components/dashboard/sites-explorer";
 import {
   runDatasetAnalysis,
   getSignExplorationDetails,
   getTransitionEvidenceInscriptions,
 } from "@/lib/db/analysis-repository";
+import { getMultiSiteReport } from "@/lib/db/multisite-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -88,8 +90,18 @@ export default async function ResearchDashboardPage({ searchParams }: PageProps)
     }
   }
 
+  let multiSiteReport = null;
+  if (activeTab === "sites") {
+    try {
+      multiSiteReport = await getMultiSiteReport(report.dataset.id);
+    } catch (err) {
+      console.error("Failed to load multi-site report:", err);
+    }
+  }
+
   const tabs = [
     { id: "overview", label: "📊 Overview & Charts" },
+    { id: "sites", label: "🏛️ Corpus & Sites" },
     { id: "signs", label: "🔍 Sign Explorer" },
     { id: "transitions", label: "⇄ Transition Explorer" },
     { id: "motifs", label: "🧩 Motif Explorer" },
@@ -184,6 +196,10 @@ export default async function ResearchDashboardPage({ searchParams }: PageProps)
       {/* Tab Content Display */}
       <div className="mt-8">
         {activeTab === "overview" && <DashboardOverview report={report} />}
+
+        {activeTab === "sites" && multiSiteReport && (
+          <SitesExplorer report={multiSiteReport} />
+        )}
 
         {activeTab === "signs" && (
           <SignExplorer
