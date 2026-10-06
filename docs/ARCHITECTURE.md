@@ -121,16 +121,25 @@ Implemented measurements:
 - **M2. Sequence length distribution**: summary statistics (min, max, median, mean, sample standard deviation) and frequency histogram; complete and incomplete subsets separated.
 - **M3. Positional frequencies**: first-position frequency based on source-recorded `position_index = 1`; terminal-position frequency gated strictly to `source_completeness = 'complete'`. Highlights that catalogue transcription order is not an inferred reading direction.
 - **M4. Adjacent sign-pair frequency**: empirical co-occurrence frequency of consecutive identified positions (`pos` and `pos + 1`). Gaps or non-identified tokens break pairs. Filtered by threshold `frequency >= 2`.
+- **M6. Sign positional profiles & normalized relative position**: for frequent signs (threshold: total occurrences ≥ 10), reports distribution across positions 1, 2, 3, 4, 5+ and normalized relative position (`position_index / sequence_length` on sequences of length ≥ 2; mean and sample standard deviation). Characterizes formal positional clustering without assigning grammatical prefix/suffix roles.
+- **M7. Immediate sign transitions (predecessors & successors)**: for high-frequency signs (total occurrences ≥ 20), reports top immediately preceding signs (pos - 1) and succeeding signs (pos + 1) with transition conditional probabilities over non-boundary positions. Co-occurrence counts reflect recorded transcription adjacency only.
+- **M8. Contiguous sequence motifs & initial combinations**: contiguous subsequences of lengths 2, 3, and 4 occurring ≥ 2 times across the corpus, with occurrence counts, inscription counts, and example identifiers. Terminal motifs are explicitly gated/noted as incomplete due to unrecorded sequence completeness.
+- **M9. Sequence diversity & internal sign repetition**: corpus-level diversity summary (100% unique-sign sequences vs sequences with repeated signs; mean diversity ratio) and identification of signs occurring multiple times on a single inscribed surface.
+- **M10. Sequence duplicates & near-duplicates**: identifies exact identical sequences across multiple inscriptions, as well as near-duplicate sequence pairs differing by Levenshtein edit distance = 1 on sequences of length ≥ 3 (classified by insertion, deletion, or substitution).
+- **M11. Measurable structural outliers**: rule-based detection of statistical anomalies (>2 standard deviations above mean length [length ≥ 10], internal duplicate count ≥ 2, or high density of corpus-unique hapax legomena signs).
 
-Boundary constraints: All outputs are empirical observations on transcribed catalogue tokens; no decipherment, phonetic, semantic, or translation claims. Computed results are not stored as database records.
+Boundary constraints: All outputs are empirical observations on transcribed catalogue tokens; no decipherment, phonetic, semantic, or translation claims. Computed results are dynamically evaluated from the frozen dataset and not stored as database records.
 
 ### Not implemented
 
 The following are intentionally **not implemented**:
 
-- Model runs, embeddings, clustering, and predictions.
+- Decipherment, translation, or phonetic prediction.
+- Syntactic trees, grammatical parts of speech, or word/phrase identification.
+- Directional entropy or information-theoretic metrics requiring un-truncated physical grounding.
+- Model runs, embeddings, clustering, and neural network predictions.
 - AI hypotheses and hypothesis evidence.
-- Cross-site statistical comparisons (awaiting multi-site corpus ingestion).
+- Cross-site statistical comparisons (corpus currently restricted to Mohenjo-daro M-1..M-199).
 - Semantic or phonetic assignments.
 
-When introduced, they must be their own versioned tables and services. They may reference Phase 1 stable IDs and evidence, but must not mutate archaeological facts, source assertions, visual catalogue records, or published sequence alternatives.
+When introduced in future phases, they must be their own versioned tables and services. They may reference Phase 1 stable IDs and evidence, but must not mutate archaeological facts, source assertions, visual catalogue records, or published sequence alternatives.

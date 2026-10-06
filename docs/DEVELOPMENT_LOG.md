@@ -115,9 +115,21 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Added `isValidUuid` guard to detail repository lookups (`getObject`, `getInscription`, `getSign`, `getSignSequence`) ensuring invalid slugs trigger clean 404s rather than database unavailability errors.
 - Enhanced `getDatasetVersion` to support both UUID and `stable_id` queries (`WHERE (dv.id::text = $1 OR dv.stable_id = $1)`).
 
+### V2.3 — Advanced computational sign analysis
+
+
+- Expanded `/analyze` server-rendered research dashboard with 6 advanced computational analysis dimensions parameterized by frozen research dataset `DATASET-CISI-MOHENJODARO-V1` (`00000000-0000-4000-8000-000000000181`).
+- Implemented **M6 (Sign Positional Profiles & Normalized Relative Position)**: distribution across positions 1, 2, 3, 4, 5+ and normalized relative position (`pos / length` on sequences of length ≥ 2; mean and sample standard deviation) for signs with ≥ 10 occurrences. Characterizes formal positional clustering (e.g. P324 early mean 0.251, P122 late mean 0.702, P385 terminal-skewed mean 0.948) without assigning grammatical prefix/suffix roles.
+- Implemented **M7 (Immediate Sign Transitions: Successors & Predecessors)**: empirical direct adjacency transitions for high-frequency signs (frequency ≥ 20) reporting top predecessors (pos - 1) and successors (pos + 1) with exact transition probabilities conditioned on non-boundary tokens.
+- Implemented **M8 (Contiguous Sequence Motifs & Initial Combinations)**: identified recurring contiguous subsequences of lengths 2, 3, and 4 occurring ≥ 2 times across the corpus (44 trigrams, 13 4-grams, 28 initial 2-sign combinations) with occurrence counts, inscription counts, and example identifiers. Re-emphasized methodological constraint that terminal patterns cannot be certified as complete due to unrecorded sequence boundary completeness.
+- Implemented **M9 (Sequence Diversity & Internal Sign Repetition)**: corpus-level diversity metrics (160 sequences / 89.4% have 100% unique signs; 19 sequences / 10.6% have duplicate signs; mean diversity ratio 0.983) and isolated 9 signs exhibiting internal repetition within single inscriptions (P268, P324, P145, P147, P378, P000, P009, P154, P205).
+- Implemented **M10 (Sequence Duplicates & Near-Duplicates)**: identified 2 exact duplicate sequences across 5 inscriptions (`P000 P122 P385` in 3 inscriptions; `P086 P123 P122 P385` in 2 inscriptions) and 10 near-duplicate sequence pairs differing by Levenshtein edit distance = 1 on sequences of length ≥ 3 (classified by insertion, deletion, or substitution).
+- Implemented **M11 (Measurable Structural Outliers)**: mathematical rule-based anomaly detection flagging sequences with length ≥ 10 (>2 SD above mean of 5.60: 8 inscriptions), multiple internal duplicate signs (repeat count ≥ 2: 1 inscription), or high density of corpus-unique hapax legomena signs.
+- Maintained strict methodological discipline: empirical descriptive statistics only, no decipherment, no phonetic/semantic claims, no ML clustering as "words", and no database mutation.
+
 ## Planned, not implemented
 
-- Phase 2 n-gram directional entropy and information-theoretic metrics.
+- Phase 2 n-gram directional entropy and information-theoretic metrics requiring physical boundary grounding.
 - Phase 3 model runs, predictions, hypotheses, or hypothesis evidence.
 - Expansion of corpus to additional sites (Harappa, Lothal, Kalibangan, etc.) as further digitized CISI/M77 data becomes verified and authorized.
 - Image and photographic asset integration.

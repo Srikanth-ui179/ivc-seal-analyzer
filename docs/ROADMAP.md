@@ -21,8 +21,10 @@ This roadmap is paced for a student building alongside college work, DSA practic
 - M77 / IDF-80 corpus ingestion pipeline. **Implemented in the repository:** parser, validator, staging and transactional promotion services, specification (`docs/M77_INGESTION_SPECIFICATION.md`), CLI runner, and verification tests. *Real corpus import is awaiting authorized source file placement at `data/corpus/m77/m77_texts.csv`.*
 - Archaeological site map. **Implemented in V2.1:** a Leaflet map and accessible site register for published site-level reference coordinates, coordinate precision where recorded, corpus/reference-only coverage, site details, and Explorer filtering. It does not map individual artefact findspots; map tiles remain a CARTO/OpenStreetMap third-party dependency.
 - Computational sign analysis foundation. **Implemented in V2.2:** server-rendered `/analyze` route parameterized by frozen dataset version snapshots, delivering empirical sign frequency distributions, sequence length statistics, first-position and terminal-position frequencies with reading-direction safeguards, adjacent sign-pair frequencies (frequency ≥ 2), and mandatory corpus coverage reporting.
+- Advanced computational sign analysis. **Implemented in V2.3:** extended `/analyze` research dashboard with sign positional profiles & normalized relative distributions (M6), transition profiles for high-frequency signs with conditional predecessors and successors (M7), contiguous sequence motifs (length 3 trigrams, length 4 4-grams, initial combinations) with example identifiers (M8), sequence diversity and internal sign repetition metrics (M9), exact duplicate and near-duplicate sequence detection under Levenshtein edit distance (M10), and transparent rule-based structural outlier detection (M11).
 - Present computational observations as measurements with methods and uncertainty, never as translations.
 - Add tests using transaction-scoped synthetic fixtures or properly sourced records; do not persist demo archaeological records in the research database.
+
 
 ## Phase 3 — AI/ML capabilities
 
