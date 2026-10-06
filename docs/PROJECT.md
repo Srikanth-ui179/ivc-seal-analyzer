@@ -25,6 +25,7 @@ The repository currently includes:
 - A server-only TypeScript PostgreSQL repository.
 - A database-backed Inscription Explorer proof of concept.
 - Read-only Phase 1 detail routes for inscriptions, signs, objects, and sites.
+- An archaeological site map and accessible site register for published site-level reference coordinates, research-corpus coverage, site details, and Explorer filtering. It does not represent individual artefact findspots.
 - Frozen, explicitly scoped dataset versions that snapshot Phase 1 inscription selection for future reproducible analysis.
 
 ## Long-term direction

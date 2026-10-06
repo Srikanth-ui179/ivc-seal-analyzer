@@ -10,12 +10,14 @@ type Props = {
     search?: string;
     page?: string;
     objectType?: string;
+    siteId?: string;
   }>;
 };
 
 export default async function ExplorerPage({ searchParams }: Props) {
   const params = await searchParams;
   const search = params.search?.trim() || undefined;
+  const siteId = params.siteId?.trim() || undefined;
   const currentPage = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const limit = 24;
   const offset = (currentPage - 1) * limit;
@@ -24,6 +26,7 @@ export default async function ExplorerPage({ searchParams }: Props) {
     const inscriptions = await listInscriptions({
       scope: "research",
       search,
+      siteId,
       objectType: params.objectType || undefined,
       limit,
       offset,
@@ -73,7 +76,15 @@ export default async function ExplorerPage({ searchParams }: Props) {
             )}
           </form>
 
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {siteId && (
+              <span className="flex items-center gap-1.5 rounded bg-sandstone/35 border border-ink/10 px-2.5 py-1 text-xs text-ink font-medium">
+                Site filter active
+                <Link href="/explorer" aria-label="Clear site filter" className="ml-1 font-bold text-clay hover:text-ink" title="Clear site filter">
+                  ✕ Clear
+                </Link>
+              </span>
+            )}
             <span className="rounded bg-moss/10 px-2.5 py-1 font-semibold text-moss">
               Research Corpus ({inscriptions.total} records)
             </span>

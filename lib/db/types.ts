@@ -161,3 +161,18 @@ export type CorpusStatistics = {
     rightsSummary: string | null;
   }>;
 };
+
+export type SiteMapPoint = {
+  id: string;
+  stableId: string;
+  canonicalName: string;
+  modernRegion: string | null;
+  country: string | null;
+  latitude: string;
+  longitude: string;
+  coordinatePrecisionMeters: number | null;
+  notes: string | null;
+  objectsCount: number;
+  inscriptionsCount: number;
+  isCorpusSite: boolean;
+};

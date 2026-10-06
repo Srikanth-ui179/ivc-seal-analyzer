@@ -17,6 +17,7 @@ import type {
   SignSequenceDetail,
   SignSummary,
   SiteDetail,
+  SiteMapPoint,
   SiteSummary,
 } from "@/lib/db/types";
 
@@ -96,9 +97,47 @@ export async function listSites(options: QueryOptions = {}): Promise<Page<SiteSu
   );
 }
 
+export async function listSitesForMap(): Promise<SiteMapPoint[]> {
+  const result = await databaseQuery<{
+    id: string;
+    stableId: string;
+    canonicalName: string;
+    modernRegion: string | null;
+    country: string | null;
+    latitude: string;
+    longitude: string;
+    coordinatePrecisionMeters: number | null;
+    notes: string | null;
+    objectsCount: number;
+    inscriptionsCount: number;
+    isCorpusSite: boolean;
+  }>(
+    `SELECT
+       s.id,
+       s.stable_id AS "stableId",
+       s.canonical_name AS "canonicalName",
+       s.modern_region AS "modernRegion",
+       s.country,
+       s.latitude::text AS latitude,
+       s.longitude::text AS longitude,
+       s.coordinate_precision_meters AS "coordinatePrecisionMeters",
+       s.notes,
+       COUNT(DISTINCT o.id)::int AS "objectsCount",
+       COUNT(DISTINCT i.id)::int AS "inscriptionsCount",
+       (COUNT(DISTINCT o.id) > 0) AS "isCorpusSite"
+     FROM sites s
+     LEFT JOIN objects o ON o.site_id = s.id AND o.record_scope = 'research'
+     LEFT JOIN inscriptions i ON i.object_id = o.id AND i.record_scope = 'research'
+     WHERE s.record_scope = 'research' AND s.status = 'active' AND s.latitude IS NOT NULL AND s.longitude IS NOT NULL
+     GROUP BY s.id
+     ORDER BY "objectsCount" DESC, s.canonical_name ASC`
+  );
+  return result.rows;
+}
+
 export async function getSite(id: string): Promise<(SiteDetail & { objectsCount: number; objects: ObjectSummary[] }) | null> {
   const result = await databaseQuery<SiteDetail>(
-    `SELECT id, stable_id AS "stableId", record_scope AS "recordScope", status, canonical_name AS "canonicalName", modern_region AS "modernRegion", country, latitude::text, longitude::text, coordinate_precision_meters AS "coordinatePrecisionMeters", notes, created_at AS "createdAt", updated_at AS "updatedAt" FROM sites WHERE id = $1 AND record_scope = 'research'`,
+    `SELECT id, stable_id AS "stableId", record_scope AS "recordScope", status, canonical_name AS "canonicalName", modern_region AS "modernRegion", country, latitude::text, longitude::text, coordinate_precision_meters AS "coordinatePrecisionMeters", notes, created_at AS "createdAt", updated_at AS "updatedAt" FROM sites WHERE (id::text = $1 OR stable_id = $1) AND record_scope = 'research'`,
     [id]
   );
   const site = result.rows[0];
@@ -106,11 +145,11 @@ export async function getSite(id: string): Promise<(SiteDetail & { objectsCount:
 
   const objectsRes = await databaseQuery<ObjectSummary>(
     `SELECT o.id, o.stable_id AS "stableId", o.record_scope AS "recordScope", o.status, o.object_type AS "objectType", o.material FROM objects o WHERE o.site_id = $1 ORDER BY o.stable_id LIMIT 50`,
-    [id]
+    [site.id]
   );
   const countRes = await databaseQuery<{ count: string }>(
     `SELECT count(*)::text AS count FROM objects WHERE site_id = $1`,
-    [id]
+    [site.id]
   );
 
   return {
@@ -181,7 +220,7 @@ export async function listInscriptions(options: InscriptionQueryOptions = {}): P
   addScopeFilter(filters, values, options.scope, "i.record_scope");
   if (options.siteId) {
     values.push(options.siteId);
-    filters.push(`o.site_id = $${values.length}`);
+    filters.push(`(s.id::text = $${values.length} OR s.stable_id = $${values.length})`);
   }
   if (options.objectType) {
     values.push(options.objectType);

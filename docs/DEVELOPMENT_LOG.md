@@ -88,10 +88,20 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Updated Homepage (`/`) to display live PostgreSQL corpus statistics (179 inscriptions, 182 signs, 1,003 occurrences).
 - Updated Research page (`/research`) with dedicated Corpus Provenance section detailing release `REL-CISI-MAYIG-V1`, licensing, and WIP dataset boundaries.
 
+### V2.1 — Archaeological site map reliability
+
+- Added the database-backed `/map` route, Leaflet map, and accessible site register for research-scoped archaeological sites with recorded coordinates.
+- The map derives corpus/reference-only status and object/inscription counts from repository data. It preserves links to site details and Explorer filtering by `siteId`.
+- Coordinates represent published site-level archaeological reference datums. Recorded precision describes the site datum where available; neither map markers nor precision represent individual seal or inscription findspots.
+- Registered reference-only sites are source-backed published benchmarks with zero corpus objects and inscriptions. The active corpus site remains determined by current research records rather than hard-coded UI values.
+- Popup content now uses text-safe DOM construction and coordinate bounds are validated before marker or viewport use. Invalid coordinate values are omitted from the canvas without breaking the site register.
+- The default basemap uses CARTO tiles with visible OpenStreetMap/CARTO attribution. Tile availability and terms are external dependencies.
+
 ## Planned, not implemented
 
 - Phase 2 analysis runs, n-gram frequencies, and computational observations.
 - Phase 3 model runs, predictions, hypotheses, or hypothesis evidence.
 - Expansion of corpus to additional sites (Harappa, Lothal, Kalibangan, etc.) as further digitized CISI/M77 data becomes verified and authorized.
 - Image and photographic asset integration.
+- Findspot-level mapping; available data remains at site-level reference-coordinate granularity.
 - Authentication, authorization, backups, deployment, and production monitoring.

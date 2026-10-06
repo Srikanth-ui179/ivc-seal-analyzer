@@ -31,6 +31,14 @@ The current frontend uses Next.js App Router. Most pages remain presentational a
 
 The Explorer page is dynamic server-rendered and reads research-scoped records only. Staging rows and internal demo scope records are never exposed through the research UI.
 
+### Archaeological site map
+
+`/map` is a dynamic, database-backed map of research-scoped archaeological sites. `listSitesForMap` returns site-level coordinates, recorded coordinate precision, and research object/inscription counts. The client-only Leaflet component validates latitude (`-90..90`) and longitude (`-180..180`) before creating a marker; invalid values are excluded from the canvas without preventing the site register from rendering.
+
+The map presents site-level archaeological reference coordinates, not individual artefact or inscription findspots. Coordinate precision, when recorded, describes the published site datum and does not increase the precision of an artefact location. Corpus sites have one or more research records; reference-only sites are published site records with zero corpus objects and inscriptions. The accompanying accessible site register provides the same coordinate, precision, coverage, and site-detail links without requiring map interaction. Site-detail links and the Explorer's `siteId` filter use the site record identifier.
+
+Leaflet is dynamically imported to avoid server rendering browser APIs. The default basemap is CARTO, with visible OpenStreetMap and CARTO attribution; deployments may override the tile URL and attribution through public map environment variables. Tile availability and terms remain a third-party dependency. Leaflet popup content is built with DOM text nodes, so database values are never inserted as raw HTML.
+
 ## Local database service
 
 `docker-compose.yml` runs a named PostgreSQL 16 container, `indusscript-ai-postgres`, with a persistent named volume. The workspace is mounted read-only at `/workspace` so `psql` inside the container can execute migrations. The Compose health check uses `pg_isready`.
