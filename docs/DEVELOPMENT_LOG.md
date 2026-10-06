@@ -95,7 +95,7 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Coordinates represent published site-level archaeological reference datums. Recorded precision describes the site datum where available; neither map markers nor precision represent individual seal or inscription findspots.
 - Registered reference-only sites are source-backed published benchmarks with zero corpus objects and inscriptions. The active corpus site remains determined by current research records rather than hard-coded UI values.
 - Popup content now uses text-safe DOM construction and coordinate bounds are validated before marker or viewport use. Invalid coordinate values are omitted from the canvas without breaking the site register.
-- The default basemap uses CARTO tiles with visible OpenStreetMap/CARTO attribution. Tile availability and terms are external dependencies.
+- The default basemap uses OpenStreetMap tiles with visible OpenStreetMap attribution. Tile availability and terms are external dependencies.
 
 ### V2.2 — Computational sign analysis foundation
 
@@ -107,6 +107,13 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Implemented **M3 (Positional Frequencies)**: first-position distribution based on source-recorded position 1 (top initial signs: P324 at 43.02%, P086 at 10.61%). Included epigraphic safeguard stating recorded order is not an inferred reading direction. Gated terminal-position frequency to complete sequences (0 reported due to unrecorded source completeness, with clear research explanation).
 - Implemented **M4 (Adjacent Sign-Pair Frequency)**: consecutive positions (`pos` and `pos + 1`), both identified, gap-breaking, threshold ≥ 2 (111 pairs meeting threshold; top pair P122-P385 with 29 occurrences).
 - Maintained strict methodological safeguards: empirical counts only, no AI/ML, no decipherment, no phonetic/semantic claims, no computed result storage in database.
+
+### Production hardening (V2.2 post-audit)
+
+- Created and applied idempotent migration `0017_seed_frozen_dataset_v1.sql` to populate `DATASET-CISI-MOHENJODARO-V1` (`00000000-0000-4000-8000-000000000181`) and its 179 research inscription memberships in hosted PostgreSQL.
+- Updated `/map` basemap fallback to use open OpenStreetMap tiles (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`), eliminating external API key requirements.
+- Added `isValidUuid` guard to detail repository lookups (`getObject`, `getInscription`, `getSign`, `getSignSequence`) ensuring invalid slugs trigger clean 404s rather than database unavailability errors.
+- Enhanced `getDatasetVersion` to support both UUID and `stable_id` queries (`WHERE (dv.id::text = $1 OR dv.stable_id = $1)`).
 
 ## Planned, not implemented
 

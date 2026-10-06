@@ -37,7 +37,7 @@ The Explorer page is dynamic server-rendered and reads research-scoped records o
 
 The map presents site-level archaeological reference coordinates, not individual artefact or inscription findspots. Coordinate precision, when recorded, describes the published site datum and does not increase the precision of an artefact location. Corpus sites have one or more research records; reference-only sites are published site records with zero corpus objects and inscriptions. The accompanying accessible site register provides the same coordinate, precision, coverage, and site-detail links without requiring map interaction. Site-detail links and the Explorer's `siteId` filter use the site record identifier.
 
-Leaflet is dynamically imported to avoid server rendering browser APIs. The default basemap is CARTO, with visible OpenStreetMap and CARTO attribution; deployments may override the tile URL and attribution through public map environment variables. Tile availability and terms remain a third-party dependency. Leaflet popup content is built with DOM text nodes, so database values are never inserted as raw HTML.
+Leaflet is dynamically imported to avoid server rendering browser APIs. The default basemap uses OpenStreetMap, with visible OpenStreetMap attribution; deployments may override the tile URL and attribution through public map environment variables (`NEXT_PUBLIC_MAP_TILE_URL`, `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`). Tile availability and terms remain a third-party dependency. Leaflet popup content is built with DOM text nodes, so database values are never inserted as raw HTML.
 
 ## Local database service
 

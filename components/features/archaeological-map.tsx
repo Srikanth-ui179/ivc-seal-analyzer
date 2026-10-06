@@ -80,11 +80,12 @@ export function ArchaeologicalMap({ sites }: Props) {
 
     import("leaflet").then((L) => {
       if (!mapContainerRef.current || mapInstanceRef.current || isDisposed) return;
-      const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-      const tileAttribution = process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+      const tileUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      const tileAttribution = process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+      const subdomains = process.env.NEXT_PUBLIC_MAP_TILE_SUBDOMAINS || "abc";
       const map = L.map(mapContainerRef.current, { center: [27.0, 71.0], zoom: 6, minZoom: 4, maxZoom: 16, scrollWheelZoom: true });
       mapInstanceRef.current = map;
-      L.tileLayer(tileUrl, { attribution: tileAttribution, maxZoom: 18, subdomains: "abcd" }).addTo(map);
+      L.tileLayer(tileUrl, { attribution: tileAttribution, maxZoom: 19, subdomains }).addTo(map);
 
       const validPoints: [number, number][] = [];
       sites.forEach((site) => {

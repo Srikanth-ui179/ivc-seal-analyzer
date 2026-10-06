@@ -38,6 +38,12 @@ function addScopeFilter(filters: string[], values: unknown[], scope: ScopeFilter
   }
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isValidUuid(id: string): boolean {
+  return typeof id === "string" && UUID_REGEX.test(id);
+}
+
 function toSequence(row: RawSequence, tokens: string[] = []): SequenceSummary {
   return { ...row, tokens };
 }
@@ -189,6 +195,7 @@ export async function listObjects(options: ObjectQueryOptions = {}): Promise<Pag
 }
 
 export async function getObject(id: string): Promise<(ObjectDetail & { inscriptions: InscriptionSummary[]; catalogueIdentifiers: CatalogueIdentifierSummary[] }) | null> {
+  if (!isValidUuid(id)) return null;
   const result = await databaseQuery<ObjectDetail>(
     `SELECT o.id, o.stable_id AS "stableId", o.record_scope AS "recordScope", o.status, o.object_type AS "objectType", o.material, o.collection_name AS "collectionName", o.collection_identifier AS "collectionIdentifier", o.current_location AS "currentLocation", o.height_mm::text AS "heightMm", o.width_mm::text AS "widthMm", o.depth_mm::text AS "depthMm", o.diameter_mm::text AS "diameterMm", o.condition_notes AS "conditionNotes", o.created_at AS "createdAt", o.updated_at AS "updatedAt", CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM objects o LEFT JOIN sites s ON s.id = o.site_id WHERE o.id = $1 AND o.record_scope = 'research'`,
     [id]
@@ -243,6 +250,7 @@ export async function listInscriptions(options: InscriptionQueryOptions = {}): P
 }
 
 export async function getInscription(id: string): Promise<(InscriptionDetail & { catalogueIdentifiers: CatalogueIdentifierSummary[]; sourceRelease?: { releaseLabel: string; sourceTitle: string; rightsSummary: string | null } }) | null> {
+  if (!isValidUuid(id)) return null;
   const inscriptionResult = await databaseQuery<Omit<InscriptionDetail, "sequences" | "primarySequence">>(
     `SELECT i.id, i.stable_id AS "stableId", i.record_scope AS "recordScope", i.status, i.surface_label AS "surfaceLabel", i.image_reference AS "imageReference", i.image_rights_status AS "imageRightsStatus", i.condition_notes AS "conditionNotes", i.created_at AS "createdAt", i.updated_at AS "updatedAt", json_build_object('id', o.id, 'stableId', o.stable_id, 'objectType', o.object_type, 'material', o.material) AS object, CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM inscriptions i JOIN objects o ON o.id = i.object_id LEFT JOIN sites s ON s.id = o.site_id WHERE i.id = $1 AND i.record_scope = 'research'`,
     [id]
@@ -333,6 +341,7 @@ export async function listSigns(options: SignQueryOptions = {}): Promise<Page<Si
 }
 
 export async function getSign(id: string): Promise<SignDetail | null> {
+  if (!isValidUuid(id)) return null;
   const result = await databaseQuery<SignDetail>(
     `SELECT sg.id, sg.stable_id AS "stableId", sg.record_scope AS "recordScope", sg.status, sg.catalogue_namespace AS "catalogueNamespace", sg.catalogue_code AS "catalogueCode", sg.visual_label AS "visualLabel", sg.glyph_svg AS "glyphSvg", sg.visual_description AS "visualDescription", sg.image_reference AS "imageReference", sg.created_at AS "createdAt", sg.updated_at AS "updatedAt", CASE WHEN parent.id IS NULL THEN NULL ELSE json_build_object('id', parent.id, 'stableId', parent.stable_id, 'catalogueNamespace', parent.catalogue_namespace, 'catalogueCode', parent.catalogue_code, 'visualLabel', parent.visual_label) END AS "parentSign" FROM signs sg LEFT JOIN signs parent ON parent.id = sg.parent_sign_id WHERE sg.id = $1 AND sg.record_scope = 'research'`,
     [id]
@@ -358,6 +367,7 @@ export async function getSign(id: string): Promise<SignDetail | null> {
 }
 
 export async function getSignSequence(id: string): Promise<SignSequenceDetail | null> {
+  if (!isValidUuid(id)) return null;
   const result = await databaseQuery<RawSequence & { inscription: SignSequenceDetail["inscription"] }>(
     `SELECT sq.id, sq.stable_id AS "stableId", sq.record_scope AS "recordScope", sq.status, sq.sequence_basis AS "sequenceBasis", sq.sequence_version AS "sequenceVersion", sq.is_primary AS "isPrimary", sq.editorial_note AS "editorialNote", json_build_object('id', i.id, 'stableId', i.stable_id, 'surfaceLabel', i.surface_label, 'recordScope', i.record_scope) AS inscription FROM sign_sequences sq JOIN inscriptions i ON i.id = sq.inscription_id WHERE sq.id = $1 AND sq.record_scope = 'research'`,
     [id]
