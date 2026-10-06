@@ -97,9 +97,20 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Popup content now uses text-safe DOM construction and coordinate bounds are validated before marker or viewport use. Invalid coordinate values are omitted from the canvas without breaking the site register.
 - The default basemap uses CARTO tiles with visible OpenStreetMap/CARTO attribution. Tile availability and terms are external dependencies.
 
+### V2.2 — Computational sign analysis foundation
+
+- Replaced mock analysis prototype with server-rendered, database-backed `/analyze` route parameterized by frozen dataset version snapshots (`lib/db/analysis-repository.ts`, `lib/db/analysis-types.ts`).
+- Connected analysis directly to frozen research dataset `DATASET-CISI-MOHENJODARO-V1` (179 inscriptions, 179 primary sequences, 1,003 character occurrences, 182 distinct signs) joining via `dataset_version_inscriptions`.
+- Implemented **M5 (Corpus Coverage)**: token identification status coverage (100% identified, 0% tentative/unidentified/damaged in current release) and sequence completeness coverage (100% not_recorded).
+- Implemented **M1 (Sign Frequency Distribution)**: primary distribution restricted to identified tokens (top sign P324 with 99 occurrences / 9.87%, P122 with 76 occurrences / 7.58%); separate panel for non-identified coverage.
+- Implemented **M2 (Sequence Length Distribution)**: summary statistics (min 1, max 13, median 5, mean 5.60, sample standard deviation 2.16) and complete sequence length frequency histogram. Separated complete vs. incomplete vs. unrecorded subsets.
+- Implemented **M3 (Positional Frequencies)**: first-position distribution based on source-recorded position 1 (top initial signs: P324 at 43.02%, P086 at 10.61%). Included epigraphic safeguard stating recorded order is not an inferred reading direction. Gated terminal-position frequency to complete sequences (0 reported due to unrecorded source completeness, with clear research explanation).
+- Implemented **M4 (Adjacent Sign-Pair Frequency)**: consecutive positions (`pos` and `pos + 1`), both identified, gap-breaking, threshold ≥ 2 (111 pairs meeting threshold; top pair P122-P385 with 29 occurrences).
+- Maintained strict methodological safeguards: empirical counts only, no AI/ML, no decipherment, no phonetic/semantic claims, no computed result storage in database.
+
 ## Planned, not implemented
 
-- Phase 2 analysis runs, n-gram frequencies, and computational observations.
+- Phase 2 n-gram directional entropy and information-theoretic metrics.
 - Phase 3 model runs, predictions, hypotheses, or hypothesis evidence.
 - Expansion of corpus to additional sites (Harappa, Lothal, Kalibangan, etc.) as further digitized CISI/M77 data becomes verified and authorized.
 - Image and photographic asset integration.

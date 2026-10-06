@@ -111,13 +111,26 @@ Implemented tables (migrations `0010`–`0014`):
 - Extended `sign_sequences` & `sign_occurrences`: preserves exact source transcriptions, line labels, reading directions, layout types, completeness, and exact source token texts and markers.
 - Expanded `archaeological_assertions`: polymorphic subject types expanded to include `sign`, `sign_sequence`, `sign_variant`, and `object_relationship` with strict scope verification.
 
+### Phase 2 computational sign analysis
+
+`/analyze` is a server-rendered analysis workspace parameterized by frozen dataset version snapshots (`lib/db/analysis-repository.ts`, `lib/db/analysis-types.ts`). Every measurement query joins explicitly on `dataset_version_inscriptions` rather than using a broad `record_scope = 'research'` shortcut.
+
+Implemented measurements:
+- **M5. Corpus & identification coverage**: token counts and percentages by epigraphic certainty status (`identified`, `tentative`, `unidentified`, `damaged`); sequence counts by source completeness status.
+- **M1. Sign frequency distribution**: ranked frequencies and corpus shares for identified tokens; tentative/unidentified/damaged forms monitored in separate visible panels.
+- **M2. Sequence length distribution**: summary statistics (min, max, median, mean, sample standard deviation) and frequency histogram; complete and incomplete subsets separated.
+- **M3. Positional frequencies**: first-position frequency based on source-recorded `position_index = 1`; terminal-position frequency gated strictly to `source_completeness = 'complete'`. Highlights that catalogue transcription order is not an inferred reading direction.
+- **M4. Adjacent sign-pair frequency**: empirical co-occurrence frequency of consecutive identified positions (`pos` and `pos + 1`). Gaps or non-identified tokens break pairs. Filtered by threshold `frequency >= 2`.
+
+Boundary constraints: All outputs are empirical observations on transcribed catalogue tokens; no decipherment, phonetic, semantic, or translation claims. Computed results are not stored as database records.
+
 ### Not implemented
 
 The following are intentionally **not implemented**:
 
-- Real archaeological corpus imports or live ingestion execution.
-- Computational observations and analysis runs.
-- Model runs and predictions.
+- Model runs, embeddings, clustering, and predictions.
 - AI hypotheses and hypothesis evidence.
+- Cross-site statistical comparisons (awaiting multi-site corpus ingestion).
+- Semantic or phonetic assignments.
 
 When introduced, they must be their own versioned tables and services. They may reference Phase 1 stable IDs and evidence, but must not mutate archaeological facts, source assertions, visual catalogue records, or published sequence alternatives.

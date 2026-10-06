@@ -20,8 +20,7 @@ This roadmap is paced for a student building alongside college work, DSA practic
 - Authorized corpus delivery, staging, and provenance foundation. **Implemented in the repository:** migrations `0010`–`0014`, release metadata, immutable raw staging rows, catalogue identifiers, object relationships, visual sign variants, expanded assertion subjects, and verification suite.
 - M77 / IDF-80 corpus ingestion pipeline. **Implemented in the repository:** parser, validator, staging and transactional promotion services, specification (`docs/M77_INGESTION_SPECIFICATION.md`), CLI runner, and verification tests. *Real corpus import is awaiting authorized source file placement at `data/corpus/m77/m77_texts.csv`.*
 - Archaeological site map. **Implemented in V2.1:** a Leaflet map and accessible site register for published site-level reference coordinates, coordinate precision where recorded, corpus/reference-only coverage, site details, and Explorer filtering. It does not map individual artefact findspots; map tiles remain a CARTO/OpenStreetMap third-party dependency.
-- Add reproducible, parameterized analysis runs.
-- Implement simple descriptive statistics: sign frequency, sequence length, positional distribution, and co-occurrence.
+- Computational sign analysis foundation. **Implemented in V2.2:** server-rendered `/analyze` route parameterized by frozen dataset version snapshots, delivering empirical sign frequency distributions, sequence length statistics, first-position and terminal-position frequencies with reading-direction safeguards, adjacent sign-pair frequencies (frequency ≥ 2), and mandatory corpus coverage reporting.
 - Present computational observations as measurements with methods and uncertainty, never as translations.
 - Add tests using transaction-scoped synthetic fixtures or properly sourced records; do not persist demo archaeological records in the research database.
 
