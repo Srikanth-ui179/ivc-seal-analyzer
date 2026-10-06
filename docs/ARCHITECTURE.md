@@ -130,6 +130,34 @@ Implemented measurements:
 
 Boundary constraints: All outputs are empirical observations on transcribed catalogue tokens; no decipherment, phonetic, semantic, or translation claims. Computed results are dynamically evaluated from the frozen dataset and not stored as database records.
 
+### Phase 2 research dashboard & visual exploration layer (V2.4)
+
+`/research/dashboard` provides an interactive visual exploration and evidence-traceability layer on top of the computational analysis engine (`components/dashboard/`, `lib/db/analysis-repository.ts`).
+
+Core architecture and UX flow:
+```
+Dashboard overview & visualizations
+  ↓
+Interesting pattern (sign, transition, motif, duplicate, outlier)
+  ↓
+Pattern detail & relative distribution metrics
+  ↓
+Underlying inscriptions (complete enumeration with target highlight)
+  ↓
+Object & archaeological context (/explorer/[id])
+  ↓
+Site datum & published provenance (/sites/[id], /objects/[id])
+```
+
+Interactive exploration modules:
+- **Corpus overview & key findings**: summary cards, 5 responsive SVG/Tailwind visualizations (Sign Frequency bar chart, Sequence Length histogram, Positional Skew comparative profile, Dominant Adjacency transitions chart, and Contiguous Motifs frequency breakdown).
+- **Sign Explorer**: detailed sign profile (occurrences, corpus %, initial frequency, positional breakdown across positions 1–5+, mean relative position ± SD), frequent predecessors and successors, motifs containing the sign, and the **complete list of underlying inscriptions** containing the selected sign with the sign highlighted in each sequence.
+- **Transition Explorer**: directed adjacency transitions (`Sign 1 → Sign 2`), co-occurrence frequencies, conditional probabilities $P(\text{succ} \mid \text{pred})$, and **complete enumeration of underlying inscriptions** with the adjacent pair highlighted in context.
+- **Motif Explorer**: contiguous n-grams (Trigrams of length 3, 4-Grams of length 4, and Initial 2-sign prefix-like patterns) with interactive badges linking directly to every matching seal.
+- **Duplicate & Near-Duplicate Explorer**: side-by-side comparative inspection of exact sequence duplicate groups (e.g. M-110A, M-175A, M-19A) and Levenshtein edit distance = 1 near-duplicate pairs with direct links to both seals.
+- **Structural Outlier Explorer**: rule-based inspection of statistical outliers (length ≥ 10, multiple internal duplicates, hapax legomena density) with transparent criteria and direct links to `/explorer/[id]`.
+- **Evidence Traceability Guarantee**: Every computational observation provides direct links to the physical seals and digitized records responsible for that observation.
+
 ### Not implemented
 
 The following are intentionally **not implemented**:

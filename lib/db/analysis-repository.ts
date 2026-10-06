@@ -31,6 +31,9 @@ import type {
   SignTransitionProfile,
   StructuralOutlier,
   StructuralOutliersReport,
+  SignEvidenceItem,
+  TransitionEvidenceItem,
+  SignExplorationDetails,
 } from "@/lib/db/analysis-types";
 
 
@@ -432,13 +435,15 @@ export async function getAdjacentPairFrequencies(
     sign2Code: string;
     sign2Label: string;
     frequency: number;
+    exampleInscriptions: string[];
   }>(
     `SELECT
        s1.catalogue_code AS "sign1Code",
        s1.visual_label AS "sign1Label",
        s2.catalogue_code AS "sign2Code",
        s2.visual_label AS "sign2Label",
-       COUNT(*)::int AS frequency
+       COUNT(*)::int AS frequency,
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -575,12 +580,14 @@ export async function getSignTransitionProfiles(
     neighborCode: string;
     neighborLabel: string;
     count: number;
+    exampleInscriptions: string[];
   }>(
     `SELECT
        s2.catalogue_code AS "targetCode",
        s1.catalogue_code AS "neighborCode",
        s1.visual_label AS "neighborLabel",
-       COUNT(*)::int AS count
+       COUNT(*)::int AS count,
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -602,12 +609,14 @@ export async function getSignTransitionProfiles(
     neighborCode: string;
     neighborLabel: string;
     count: number;
+    exampleInscriptions: string[];
   }>(
     `SELECT
        s1.catalogue_code AS "targetCode",
        s2.catalogue_code AS "neighborCode",
        s2.visual_label AS "neighborLabel",
-       COUNT(*)::int AS count
+       COUNT(*)::int AS count,
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -624,17 +633,17 @@ export async function getSignTransitionProfiles(
     [datasetVersionId, targetCodes]
   );
 
-  const predMap = new Map<string, Array<{ neighborCode: string; neighborLabel: string; count: number }>>();
+  const predMap = new Map<string, Array<{ neighborCode: string; neighborLabel: string; count: number; exampleInscriptions: string[] }>>();
   for (const row of predecessorsResult.rows) {
     const list = predMap.get(row.targetCode) ?? [];
-    list.push({ neighborCode: row.neighborCode, neighborLabel: row.neighborLabel, count: row.count });
+    list.push({ neighborCode: row.neighborCode, neighborLabel: row.neighborLabel, count: row.count, exampleInscriptions: row.exampleInscriptions });
     predMap.set(row.targetCode, list);
   }
 
-  const succMap = new Map<string, Array<{ neighborCode: string; neighborLabel: string; count: number }>>();
+  const succMap = new Map<string, Array<{ neighborCode: string; neighborLabel: string; count: number; exampleInscriptions: string[] }>>();
   for (const row of successorsResult.rows) {
     const list = succMap.get(row.targetCode) ?? [];
-    list.push({ neighborCode: row.neighborCode, neighborLabel: row.neighborLabel, count: row.count });
+    list.push({ neighborCode: row.neighborCode, neighborLabel: row.neighborLabel, count: row.count, exampleInscriptions: row.exampleInscriptions });
     succMap.set(row.targetCode, list);
   }
 
@@ -653,6 +662,7 @@ export async function getSignTransitionProfiles(
         totalPredOccurrences > 0
           ? Number(((p.count * 100) / totalPredOccurrences).toFixed(1))
           : 0,
+      exampleInscriptions: p.exampleInscriptions,
     }));
 
     const topSuccessors: SignTransitionItem[] = succs.slice(0, 5).map((s) => ({
@@ -663,6 +673,7 @@ export async function getSignTransitionProfiles(
         totalSuccOccurrences > 0
           ? Number(((s.count * 100) / totalSuccOccurrences).toFixed(1))
           : 0,
+      exampleInscriptions: s.exampleInscriptions,
     }));
 
     return {
@@ -698,7 +709,7 @@ export async function getSequenceMotifs(
        ARRAY[s1.catalogue_code, s2.catalogue_code, s3.catalogue_code] AS signs,
        COUNT(*)::int AS "occurrenceCount",
        COUNT(DISTINCT i.id)::int AS "inscriptionCount",
-       (ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id))[1:3] AS "exampleInscriptions"
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -730,7 +741,7 @@ export async function getSequenceMotifs(
        ARRAY[s1.catalogue_code, s2.catalogue_code, s3.catalogue_code, s4.catalogue_code] AS signs,
        COUNT(*)::int AS "occurrenceCount",
        COUNT(DISTINCT i.id)::int AS "inscriptionCount",
-       (ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id))[1:3] AS "exampleInscriptions"
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -765,7 +776,7 @@ export async function getSequenceMotifs(
        ARRAY[s1.catalogue_code, s2.catalogue_code] AS signs,
        COUNT(*)::int AS "occurrenceCount",
        COUNT(DISTINCT i.id)::int AS "inscriptionCount",
-       (ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id))[1:3] AS "exampleInscriptions"
+       ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
      FROM dataset_version_inscriptions dvi
      JOIN inscriptions i ON i.id = dvi.inscription_id
      JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
@@ -1104,5 +1115,299 @@ export async function runDatasetAnalysis(
     diversityAndRepetition,
     similarity,
     outliers,
+  };
+}
+
+export async function getSignEvidenceInscriptions(
+  datasetVersionId: string,
+  signCode: string
+): Promise<SignEvidenceItem[]> {
+  const result = await databaseQuery<{
+    inscriptionId: string;
+    inscriptionStableId: string;
+    surfaceLabel: string;
+    sequenceLength: number;
+    sequence: string;
+    positions: number[];
+  }>(
+    `SELECT
+       i.id AS "inscriptionId",
+       i.stable_id AS "inscriptionStableId",
+       i.surface_label AS "surfaceLabel",
+       COUNT(occ.id)::int AS "sequenceLength",
+       STRING_AGG(s.catalogue_code, ' ' ORDER BY occ.position_index) AS sequence,
+       ARRAY_AGG(occ.position_index ORDER BY occ.position_index) FILTER (WHERE s.catalogue_code = $2) AS positions
+     FROM dataset_version_inscriptions dvi
+     JOIN inscriptions i ON i.id = dvi.inscription_id
+     JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+     JOIN sign_occurrences occ ON occ.sequence_id = seq.id
+     JOIN signs s ON s.id = occ.sign_id
+     WHERE dvi.dataset_version_id = $1
+     GROUP BY i.id, i.stable_id, i.surface_label, seq.id
+     HAVING COUNT(occ.id) FILTER (WHERE s.catalogue_code = $2) > 0
+     ORDER BY i.stable_id ASC`,
+    [datasetVersionId, signCode]
+  );
+  return result.rows;
+}
+
+export async function getTransitionEvidenceInscriptions(
+  datasetVersionId: string,
+  sign1Code: string,
+  sign2Code: string
+): Promise<TransitionEvidenceItem[]> {
+  const result = await databaseQuery<{
+    inscriptionId: string;
+    inscriptionStableId: string;
+    surfaceLabel: string;
+    pos1: number;
+    pos2: number;
+    sequence: string;
+  }>(
+    `SELECT
+       i.id AS "inscriptionId",
+       i.stable_id AS "inscriptionStableId",
+       i.surface_label AS "surfaceLabel",
+       o1.position_index AS "pos1",
+       o2.position_index AS "pos2",
+       (SELECT STRING_AGG(s_all.catalogue_code, ' ' ORDER BY o_all.position_index)
+        FROM sign_occurrences o_all
+        JOIN signs s_all ON s_all.id = o_all.sign_id
+        WHERE o_all.sequence_id = seq.id) AS sequence
+     FROM dataset_version_inscriptions dvi
+     JOIN inscriptions i ON i.id = dvi.inscription_id
+     JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+     JOIN sign_occurrences o1 ON o1.sequence_id = seq.id
+     JOIN sign_occurrences o2 ON o2.sequence_id = seq.id AND o2.position_index = o1.position_index + 1
+     JOIN signs s1 ON s1.id = o1.sign_id
+     JOIN signs s2 ON s2.id = o2.sign_id
+     WHERE dvi.dataset_version_id = $1
+       AND s1.catalogue_code = $2
+       AND s2.catalogue_code = $3
+     ORDER BY i.stable_id ASC`,
+    [datasetVersionId, sign1Code, sign2Code]
+  );
+  return result.rows;
+}
+
+export async function getSignExplorationDetails(
+  datasetVersionId: string,
+  signCode: string
+): Promise<SignExplorationDetails | null> {
+  const signInfoResult = await databaseQuery<{
+    signId: string;
+    stableId: string;
+    catalogueCode: string;
+    visualLabel: string;
+  }>(
+    `SELECT s.id AS "signId", s.stable_id AS "stableId", s.catalogue_code AS "catalogueCode", s.visual_label AS "visualLabel"
+     FROM signs s
+     WHERE s.catalogue_code = $1
+     LIMIT 1`,
+    [signCode]
+  );
+
+  if (signInfoResult.rows.length === 0) return null;
+  const signInfo = signInfoResult.rows[0];
+
+  const [statsResult, relPosResult, totalTokensResult, inscriptions, motifsReport] = await Promise.all([
+    databaseQuery<{
+      totalOccurrences: number;
+      inscriptionCount: number;
+      initialFrequency: number;
+      pos1: number;
+      pos2: number;
+      pos3: number;
+      pos4: number;
+      pos5Plus: number;
+    }>(
+      `SELECT
+         COUNT(occ.id)::int AS "totalOccurrences",
+         COUNT(DISTINCT i.id)::int AS "inscriptionCount",
+         COUNT(occ.id) FILTER (WHERE occ.position_index = 1)::int AS "initialFrequency",
+         COUNT(occ.id) FILTER (WHERE occ.position_index = 1)::int AS "pos1",
+         COUNT(occ.id) FILTER (WHERE occ.position_index = 2)::int AS "pos2",
+         COUNT(occ.id) FILTER (WHERE occ.position_index = 3)::int AS "pos3",
+         COUNT(occ.id) FILTER (WHERE occ.position_index = 4)::int AS "pos4",
+         COUNT(occ.id) FILTER (WHERE occ.position_index >= 5)::int AS "pos5Plus"
+       FROM dataset_version_inscriptions dvi
+       JOIN inscriptions i ON i.id = dvi.inscription_id
+       JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+       JOIN sign_occurrences occ ON occ.sequence_id = seq.id
+       JOIN signs s ON s.id = occ.sign_id
+       WHERE dvi.dataset_version_id = $1
+         AND s.catalogue_code = $2
+         AND occ.identification_status = 'identified'`,
+      [datasetVersionId, signCode]
+    ),
+    databaseQuery<{
+      meanRelPos: number | null;
+      stdDevRelPos: number | null;
+    }>(
+      `WITH seq_lengths AS (
+         SELECT seq.id, COUNT(o.id)::float AS len
+         FROM sign_sequences seq
+         JOIN sign_occurrences o ON o.sequence_id = seq.id
+         GROUP BY seq.id
+         HAVING COUNT(o.id) >= 2
+       )
+       SELECT
+         AVG(occ.position_index / sl.len)::float AS "meanRelPos",
+         STDDEV_SAMP(occ.position_index / sl.len)::float AS "stdDevRelPos"
+       FROM dataset_version_inscriptions dvi
+       JOIN inscriptions i ON i.id = dvi.inscription_id
+       JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+       JOIN seq_lengths sl ON sl.id = seq.id
+       JOIN sign_occurrences occ ON occ.sequence_id = seq.id
+       JOIN signs s ON s.id = occ.sign_id
+       WHERE dvi.dataset_version_id = $1
+         AND s.catalogue_code = $2
+         AND occ.identification_status = 'identified'`,
+      [datasetVersionId, signCode]
+    ),
+    databaseQuery<{ total: number }>(
+      `SELECT COUNT(occ.id)::int AS total
+       FROM dataset_version_inscriptions dvi
+       JOIN inscriptions i ON i.id = dvi.inscription_id
+       JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+       JOIN sign_occurrences occ ON occ.sequence_id = seq.id
+       WHERE dvi.dataset_version_id = $1
+         AND occ.identification_status = 'identified'`,
+      [datasetVersionId]
+    ),
+    getSignEvidenceInscriptions(datasetVersionId, signCode),
+    getSequenceMotifs(datasetVersionId, 2),
+  ]);
+
+  const stats = statsResult.rows[0] ?? {
+    totalOccurrences: 0,
+    inscriptionCount: 0,
+    initialFrequency: 0,
+    pos1: 0,
+    pos2: 0,
+    pos3: 0,
+    pos4: 0,
+    pos5Plus: 0,
+  };
+
+  const totalTokens = totalTokensResult.rows[0]?.total || 1003;
+  const corpusPercentage = Number(((stats.totalOccurrences * 100) / totalTokens).toFixed(2));
+  const initialPercentage =
+    stats.totalOccurrences > 0
+      ? Number(((stats.initialFrequency * 100) / stats.totalOccurrences).toFixed(2))
+      : 0;
+
+  const relPos = relPosResult.rows[0];
+  const meanRelativePosition = relPos?.meanRelPos != null ? Number(relPos.meanRelPos.toFixed(2)) : 0;
+  const stdDevRelativePosition =
+    relPos?.stdDevRelPos != null ? Number(relPos.stdDevRelPos.toFixed(2)) : 0;
+
+  const [predecessorsRes, successorsRes] = await Promise.all([
+    databaseQuery<{
+      neighborCode: string;
+      neighborLabel: string;
+      count: number;
+      exampleInscriptions: string[];
+    }>(
+      `SELECT
+         s1.catalogue_code AS "neighborCode",
+         s1.visual_label AS "neighborLabel",
+         COUNT(*)::int AS count,
+         ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
+       FROM dataset_version_inscriptions dvi
+       JOIN inscriptions i ON i.id = dvi.inscription_id
+       JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+       JOIN sign_occurrences o1 ON o1.sequence_id = seq.id
+       JOIN sign_occurrences o2 ON o2.sequence_id = seq.id AND o2.position_index = o1.position_index + 1
+       JOIN signs s1 ON s1.id = o1.sign_id
+       JOIN signs s2 ON s2.id = o2.sign_id
+       WHERE dvi.dataset_version_id = $1
+         AND o1.identification_status = 'identified'
+         AND o2.identification_status = 'identified'
+         AND s2.catalogue_code = $2
+       GROUP BY s1.catalogue_code, s1.visual_label
+       ORDER BY count DESC, s1.catalogue_code ASC
+       LIMIT 6`,
+      [datasetVersionId, signCode]
+    ),
+    databaseQuery<{
+      neighborCode: string;
+      neighborLabel: string;
+      count: number;
+      exampleInscriptions: string[];
+    }>(
+      `SELECT
+         s2.catalogue_code AS "neighborCode",
+         s2.visual_label AS "neighborLabel",
+         COUNT(*)::int AS count,
+         ARRAY_AGG(DISTINCT i.stable_id ORDER BY i.stable_id) AS "exampleInscriptions"
+       FROM dataset_version_inscriptions dvi
+       JOIN inscriptions i ON i.id = dvi.inscription_id
+       JOIN sign_sequences seq ON seq.inscription_id = i.id AND seq.is_primary = true
+       JOIN sign_occurrences o1 ON o1.sequence_id = seq.id
+       JOIN sign_occurrences o2 ON o2.sequence_id = seq.id AND o2.position_index = o1.position_index + 1
+       JOIN signs s1 ON s1.id = o1.sign_id
+       JOIN signs s2 ON s2.id = o2.sign_id
+       WHERE dvi.dataset_version_id = $1
+         AND o1.identification_status = 'identified'
+         AND o2.identification_status = 'identified'
+         AND s1.catalogue_code = $2
+       GROUP BY s2.catalogue_code, s2.visual_label
+       ORDER BY count DESC, s2.catalogue_code ASC
+       LIMIT 6`,
+      [datasetVersionId, signCode]
+    ),
+  ]);
+
+  const topPredecessors = predecessorsRes.rows.map((p) => ({
+    neighborCode: p.neighborCode,
+    neighborLabel: p.neighborLabel,
+    cooccurrenceCount: p.count,
+    transitionProbability:
+      stats.totalOccurrences > 0
+        ? Number(((p.count * 100) / stats.totalOccurrences).toFixed(1))
+        : 0,
+    exampleInscriptions: p.exampleInscriptions,
+  }));
+
+  const topSuccessors = successorsRes.rows.map((s) => ({
+    neighborCode: s.neighborCode,
+    neighborLabel: s.neighborLabel,
+    cooccurrenceCount: s.count,
+    transitionProbability:
+      stats.totalOccurrences > 0
+        ? Number(((s.count * 100) / stats.totalOccurrences).toFixed(1))
+        : 0,
+    exampleInscriptions: s.exampleInscriptions,
+  }));
+
+  const allMotifs = [
+    ...motifsReport.trigrams,
+    ...motifsReport.fourgrams,
+    ...motifsReport.initialPatterns,
+  ];
+  const matchingMotifs = allMotifs.filter((m) => m.signs.includes(signCode));
+
+  return {
+    signCode: signInfo.catalogueCode,
+    visualLabel: signInfo.visualLabel,
+    signId: signInfo.signId,
+    stableId: signInfo.stableId,
+    totalOccurrences: stats.totalOccurrences,
+    corpusPercentage,
+    inscriptionCount: stats.inscriptionCount,
+    initialFrequency: stats.initialFrequency,
+    initialPercentage,
+    pos1: stats.pos1,
+    pos2: stats.pos2,
+    pos3: stats.pos3,
+    pos4: stats.pos4,
+    pos5Plus: stats.pos5Plus,
+    meanRelativePosition,
+    stdDevRelativePosition,
+    topPredecessors,
+    topSuccessors,
+    motifs: matchingMotifs,
+    inscriptions,
   };
 }

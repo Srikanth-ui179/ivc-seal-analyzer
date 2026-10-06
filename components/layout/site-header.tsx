@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const links = [
-  ["Analyze", "/analyze"], ["Sign Catalogue", "/sign-catalogue"], ["Explorer", "/explorer"], ["Map", "/map"], ["Research", "/research"], ["About", "/about"],
+  ["Dashboard", "/research/dashboard"], ["Analyze", "/analyze"], ["Sign Catalogue", "/sign-catalogue"], ["Explorer", "/explorer"], ["Map", "/map"], ["Research", "/research"], ["About", "/about"],
 ];
 
 export function SiteHeader() {

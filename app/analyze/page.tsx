@@ -121,6 +121,22 @@ export default async function AnalyzePage({ searchParams }: PageProps) {
           </div>
         </div>
 
+        {/* Research Dashboard Callout */}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded border border-ink/15 bg-sandstone/15 p-4 text-xs">
+          <div>
+            <span className="font-semibold text-ink">Interactive Visual Exploration Available:</span>{" "}
+            <span className="text-ink/75">
+              Explore signs, directional transitions, motifs, duplicates, and outliers with direct seal-by-seal evidence traceability in the Research Dashboard.
+            </span>
+          </div>
+          <Link
+            href="/research/dashboard"
+            className="rounded border border-ink bg-ink px-3 py-1.5 font-semibold text-paper hover:bg-moss"
+          >
+            Open Research Dashboard →
+          </Link>
+        </div>
+
         {/* ========================================================================= */}
         {/* M5. CORPUS COVERAGE (MUST APPEAR FIRST ON THE ANALYSIS PAGE)              */}
         {/* ========================================================================= */}

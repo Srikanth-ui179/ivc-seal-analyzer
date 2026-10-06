@@ -90,6 +90,7 @@ export type AdjacentSignPair = {
   sign2Label: string;
   frequency: number;
   rank: number;
+  exampleInscriptions?: string[];
 };
 
 export type AdjacentSignPairDistribution = {
@@ -137,6 +138,7 @@ export type SignTransitionItem = {
   neighborLabel: string;
   cooccurrenceCount: number;
   transitionProbability: number;
+  exampleInscriptions?: string[];
 };
 
 export type SignTransitionProfile = {
@@ -245,4 +247,46 @@ export type AnalysisReport = {
   diversityAndRepetition: DiversityAndRepetitionReport;
   similarity: SequenceSimilarityReport;
   outliers: StructuralOutliersReport;
+};
+
+// V2.4: Evidence Traceability and Explorers
+export type SignEvidenceItem = {
+  inscriptionId: string;
+  inscriptionStableId: string;
+  surfaceLabel: string;
+  sequenceLength: number;
+  sequence: string;
+  positions: number[];
+};
+
+export type TransitionEvidenceItem = {
+  inscriptionId: string;
+  inscriptionStableId: string;
+  surfaceLabel: string;
+  pos1: number;
+  pos2: number;
+  sequence: string;
+};
+
+export type SignExplorationDetails = {
+  signCode: string;
+  visualLabel: string;
+  signId: string;
+  stableId: string;
+  totalOccurrences: number;
+  corpusPercentage: number;
+  inscriptionCount: number;
+  initialFrequency: number;
+  initialPercentage: number;
+  pos1: number;
+  pos2: number;
+  pos3: number;
+  pos4: number;
+  pos5Plus: number;
+  meanRelativePosition: number;
+  stdDevRelativePosition: number;
+  topPredecessors: SignTransitionItem[];
+  topSuccessors: SignTransitionItem[];
+  motifs: SequenceMotif[];
+  inscriptions: SignEvidenceItem[];
 };

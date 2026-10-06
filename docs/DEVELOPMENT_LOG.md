@@ -127,6 +127,38 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - Implemented **M11 (Measurable Structural Outliers)**: mathematical rule-based anomaly detection flagging sequences with length ≥ 10 (>2 SD above mean of 5.60: 8 inscriptions), multiple internal duplicate signs (repeat count ≥ 2: 1 inscription), or high density of corpus-unique hapax legomena signs.
 - Maintained strict methodological discipline: empirical descriptive statistics only, no decipherment, no phonetic/semantic claims, no ML clustering as "words", and no database mutation.
 
+### V2.4 — Research dashboard and evidence exploration layer
+
+- Created a dedicated research exploration dashboard at `/research/dashboard` (`components/dashboard/`, `app/research/dashboard/page.tsx`) implementing the research workflow: `EXPLORE → DISCOVER → INSPECT → TRACE BACK TO EVIDENCE`.
+- Preserved strict research safeguards and dataset context (`DATASET-CISI-MOHENJODARO-V1`, UUID `00000000-0000-4000-8000-000000000181`, 179 inscriptions, 1,003 sign tokens, 182 sign types).
+- Implemented **Overview & Visualizations** (`components/dashboard/dashboard-overview.tsx`):
+  - Corpus metrics and curated computational findings.
+  - 5 responsive, lightweight visual charts implemented in pure accessible SVG/Tailwind (no heavy 3rd-party charting bundles):
+    1. Sign frequency distribution bar chart (top 15 signs).
+    2. Sequence length distribution histogram (lengths 1–14 with sample mean marker at 5.60).
+    3. Positional skew profiles (early vs. late comparative distribution).
+    4. Dominant directional transitions bar chart (observed adjacencies).
+    5. Contiguous sequence motifs frequency breakdown.
+- Implemented **Sign Explorer** (`components/dashboard/sign-explorer.tsx`):
+  - Interactive sign selector (e.g. P324, P122, P086, P385).
+  - Empirical metrics: total corpus count, percentage of occurrences, inscription count, initial position count, positional distribution (positions 1..5+), normalized relative position, top predecessors, top successors, and recurring motifs containing the sign.
+  - Evidence traceability: complete table of underlying inscriptions containing the target sign, displaying full transcribed sequence with highlighted target token, and direct links to `/explorer/[id]`.
+- Implemented **Transition Explorer** (`components/dashboard/transition-explorer.tsx`):
+  - Interactive sign-pair selector (e.g. P122 → P385, P324 → P122).
+  - Empirical metrics: pair transition count, conditional transition probability relative to the source sign, and total occurrences of both signs.
+  - Evidence traceability: complete list of underlying inscriptions containing the exact transition with sequence context and direct links to `/explorer/[id]`. Explicit epigraphic safeguard clarifying transitions represent observed sequence adjacency, not grammatical or syntactic relations.
+- Implemented **Motif Explorer** (`components/dashboard/motif-explorer.tsx`):
+  - Subsequence filter by motif length: Trigrams (length 3), 4-Grams (length 4), and Initial 2-sign patterns.
+  - Evidence traceability: display of every matching inscription as clickable badge pills routing directly to `/explorer/[id]`.
+- Implemented **Duplicate & Near-Duplicate Explorer** (`components/dashboard/duplicate-explorer.tsx`):
+  - Side-by-side inspection of exact duplicate sequences (e.g. `P000 P122 P385` in 3 inscriptions; `P086 P123 P122 P385` in 2 inscriptions).
+  - Near-duplicate sequence comparison under Levenshtein edit distance = 1, categorizing operation type (insertion, deletion, substitution) with side-by-side clickable inscription comparisons.
+- Implemented **Structural Outlier Explorer** (`components/dashboard/outlier-explorer.tsx`):
+  - Rule-based anomaly viewer across length outliers (length ≥ 10), internal repetition outliers (duplicate signs within sequence), and hapax legomena density.
+  - Direct links to `/explorer/[id]` with objective epigraphic descriptions.
+- Updated main site navigation (`components/layout/site-header.tsx`), Research overview page (`app/research/page.tsx`), and Computational analysis page (`app/analyze/page.tsx`) with clear navigation paths and entry points to the new dashboard.
+- Maintained server-side database access, zero new AI/ML claims, strict frozen dataset scoping, and zero mutations to the frozen corpus.
+
 ## Planned, not implemented
 
 - Phase 2 n-gram directional entropy and information-theoretic metrics requiring physical boundary grounding.

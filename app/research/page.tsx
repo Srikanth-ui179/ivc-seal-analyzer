@@ -110,6 +110,57 @@ export default function ResearchPage() {
         </div>
       </section>
 
+      {/* Research Dashboard Entry Point */}
+      <section className="mt-16 border-t border-ink/10 pt-10">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="eyebrow">Interactive Exploration · Evidence Traceability</p>
+            <h2 className="mt-2 font-display text-3xl">Computational Research Dashboard</h2>
+            <p className="mt-2 text-sm text-ink/65">
+              Explore empirical sign distributions, directional transitions, motifs, duplicates, and outliers with direct evidence traceability to underlying seals.
+            </p>
+          </div>
+          <Link
+            href="/research/dashboard"
+            className="border border-ink bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-paper hover:bg-moss"
+          >
+            Open Research Dashboard →
+          </Link>
+        </div>
+
+        <div className="panel mt-6 p-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div>
+              <h3 className="font-display text-lg font-bold text-ink">Sign &amp; Transition Profiles</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Inspect formal positional skew, early vs late distributions, and immediate predecessor/successor transition probabilities for any sign.
+              </p>
+              <Link href="/research/dashboard?tab=signs" className="mt-3 inline-block text-xs font-semibold text-clay hover:underline">
+                Explore signs →
+              </Link>
+            </div>
+            <div className="border-t border-ink/10 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+              <h3 className="font-display text-lg font-bold text-ink">Motifs &amp; Subsequences</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Identify recurring contiguous trigrams, 4-grams, and prefix-like combinations, with complete enumeration of matching seals.
+              </p>
+              <Link href="/research/dashboard?tab=motifs" className="mt-3 inline-block text-xs font-semibold text-clay hover:underline">
+                Explore motifs →
+              </Link>
+            </div>
+            <div className="border-t border-ink/10 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+              <h3 className="font-display text-lg font-bold text-ink">Duplicates &amp; Outliers</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Examine exact identical full sequences, Levenshtein distance = 1 near-duplicate pairs, and transparent mathematical outlier sequences.
+              </p>
+              <Link href="/research/dashboard?tab=duplicates" className="mt-3 inline-block text-xs font-semibold text-clay hover:underline">
+                Explore duplicates &amp; outliers →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-16 border-t border-ink/10 pt-10">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
