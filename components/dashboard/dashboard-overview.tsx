@@ -148,7 +148,7 @@ export function DashboardOverview({ report }: Props) {
               8 Length Outliers (≥ 10 signs)
             </p>
             <p className="mt-1 text-xs text-ink/65">
-              Max length is 14 signs (M-135A; &gt;2 SD above mean). 1 seal with multiple duplicate signs.
+              Max length is 13 signs (M-38A, M-23A; &gt;2 SD above mean). 1 seal with multiple duplicate signs.
             </p>
             <span className="mt-3 block text-xs font-semibold text-clay group-hover:underline">
               Inspect outlier seals →
