@@ -169,6 +169,58 @@ V2.5 establishes the multi-site computational foundation, enriched source proven
 - **Corpus & Sites Dashboard View (`components/dashboard/sites-explorer.tsx`)**: Integrates into `/research/dashboard?tab=sites`, providing researchers with full visibility into dataset composition, active corpus sites, reference benchmarks, primary sources, and licensing.
 - **Corpus Register & Detail Enhancement (`app/research/datasets/`, `app/research/datasets/[id]`)**: Renders full bibliographic source cards, licensing links, catalogue systems, site breakdown tables, and member inscription rosters.
 
+### Phase 2 evidence-grounded AI research assistant (V2.6)
+
+V2.6 introduces an interactive natural-language research interface at `/research/assistant` and `/api/research/assistant` grounded strictly in database records and computational analysis:
+
+```text
+USER QUESTION
+      ↓
+QUESTION INTERPRETATION & ROUTER (Deterministic classification, parameter extraction, contextual reference)
+      ↓
+CONTROLLED RESEARCH TOOLS (Parameterized SQL queries scoped to DATASET-CISI-MOHENJODARO-V1)
+      ↓
+STRUCTURED EVIDENCE OBJECT (Typed claims, denominators, record identifiers, limitations, explorer links)
+      ↓
+PROSE GENERATION / SYNTHESIS (Academic formatting grounded strictly in supplied evidence)
+      ↓
+EVIDENCE-CITATION UI (Observation vs Interpretation distinction + EvidenceCard drill-down to Explorer)
+```
+
+1. **Research Tool Layer (`lib/ai/research-tools.ts`, `lib/ai/evidence-format.ts`, `lib/ai/research-types.ts`)**:
+   - `getCorpusOverview()`: Overall dataset state, 179 inscriptions, 1,003 tokens, 182 distinct signs, site breakdown.
+   - `getSignFrequency(signCode?)`: Exact sign token counts, corpus percentages, and initial-position counts.
+   - `getSignOccurrences(signCode, limit)`: Bounded listing of matching inscriptions with highlighted sign positions.
+   - `getSignPositionalProfile(signCode)`: Formal positional distribution across positions 1..5+ and mean relative position.
+   - `getTransitions(signCode, targetSign?, direction?)`: Predecessor and successor frequencies and conditional probabilities.
+   - `getMotifs(motifQuery?, length?)`: Contiguous trigrams and 4-grams with complete inscription enumeration.
+   - `getDuplicateSequences()`: Exact identical sequence groups across distinct physical seals.
+   - `getNearDuplicateSequences()`: Near-duplicate sequence pairs under Levenshtein edit distance = 1.
+   - `getOutliers(outlierType?)`: Length outliers ($\ge 10$ signs) and multiple internal repetition outliers.
+   - `getSiteCorpusStatus(siteQuery?)`: Delineation between Mohenjo-daro (179 seals) and reference-only sites (0 seals).
+   - `getDatasetLimitations()`: Epigraphic and sampling caveats (completeness unrecorded, RTL catalogue order).
+   - `checkReadingDirectionAndCompleteness()`: Safeguard explaining terminal position cannot be certified as physical edge.
+   - `searchInscriptions(query)`: Exact search by stable ID or CISI seal ID.
+   - `getUnsupportedQueryResponse(topic, targetSubject?)`: Safe handling of translation, meaning, language, or word requests.
+
+2. **Deterministic Question Routing (`lib/ai/research-router.ts`)**:
+   - Strict pattern matching and entity extraction (sign codes `P-NNN`, sequences, inscription IDs).
+   - Contextual reference resolution (mapping pronouns "it", "them", "those inscriptions" to previous `activeSign`).
+   - Zero unrestricted SQL generation: all user inquiries map exclusively to controlled parameter sets.
+
+3. **Common Evidence Format (`lib/ai/evidence-format.ts`)**:
+   - Every tool returns a structured `EvidenceObject` with `dataset`, `claim`, `summary`, `stats` (with explicit denominators), `records` (with links to `/explorer/[id]`), `limitations`, and `links`.
+
+4. **Academic Prose & Research Safeguards (`lib/ai/assistant-service.ts`)**:
+   - Dual-engine architecture: attempts Gemini Flash synthesis if `GEMINI_API_KEY` is present; seamlessly falls back to deterministic academic evidence synthesis if absent or failing.
+   - Prohibits all claims of decipherment, translation, phonetic values, grammatical roles, word boundaries, or language identity.
+   - Explicitly distinguishes **Observation** (computational fact) from **Interpretation** (linguistic hypothesis).
+
+5. **Evidence-Citation UI (`components/features/research-assistant/`)**:
+   - `research-assistant.tsx`: Conversational workspace with message thread, suggested research questions, and context tracking.
+   - `answer.tsx`: Displays natural-language answer with Observation badge and embedded `EvidenceCard`.
+   - `evidence-card.tsx`: Rich citation box presenting dataset badge, claim, statistics grid, record links, and methodological limitations.
+
 ### Not implemented
 
 The following are intentionally **not implemented**:

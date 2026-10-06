@@ -110,6 +110,48 @@ export default function ResearchPage() {
         </div>
       </section>
 
+      {/* Research Assistant Entry Point */}
+      <section className="mt-16 border-t border-ink/10 pt-10">
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <p className="eyebrow">Natural Language Query · Controlled Evidence Layer</p>
+            <h2 className="mt-2 font-display text-3xl">Evidence-Grounded Research Assistant</h2>
+            <p className="mt-2 text-sm text-ink/65">
+              Ask natural-language questions about sign frequencies, directional transitions, recurring motifs, duplicate sequences, and corpus boundaries with strict traceability to the frozen Mohenjo-daro dataset.
+            </p>
+          </div>
+          <Link
+            href="/research/assistant"
+            className="border border-clay bg-clay px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-paper hover:bg-ink"
+          >
+            Launch Assistant →
+          </Link>
+        </div>
+
+        <div className="panel mt-6 p-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <h3 className="font-display text-lg font-bold text-ink">Grounded In Verified Records</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Operates exclusively through controlled, parameterized queries against frozen dataset <span className="font-mono">DATASET-CISI-MOHENJODARO-V1</span>. No hallucinated seals or fabricated metrics.
+              </p>
+            </div>
+            <div className="border-t border-ink/10 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+              <h3 className="font-display text-lg font-bold text-ink">Strict Epigraphic Safeguards</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Never claims translation, phonetic values, linguistic readings, or decipherment. Explicitly distinguishes directly observed corpus data from interpretive hypothesis.
+              </p>
+            </div>
+            <div className="border-t border-ink/10 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              <h3 className="font-display text-lg font-bold text-ink">Full Evidence Traceability</h3>
+              <p className="mt-1 text-xs text-ink/70">
+                Every generated response includes structured evidence cards, numerical denominators, and direct links to underlying seals in the Archaeological Explorer.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Research Dashboard Entry Point */}
       <section className="mt-16 border-t border-ink/10 pt-10">
         <div className="flex flex-wrap items-end justify-between gap-5">

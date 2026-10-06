@@ -167,7 +167,32 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - **Multi-Site Analysis Engine & Comparative Gating (`lib/db/multisite-repository.ts`)**: Built `getMultiSiteReport(datasetVersionId)`. When $\ge 2$ corpus sites exist in a dataset, it evaluates comparative metrics (inscriptions by site, sign occurrences, vocabulary size, length distribution, shared vs. site-specific signs). When $< 2$ corpus sites exist, cross-site comparative metrics are strictly gated to prevent misleading zero-data comparisons, providing a transparent methodological notice instead.
 - **Interactive Corpus & Sites Dashboard (`components/dashboard/sites-explorer.tsx`, `/research/dashboard?tab=sites`)**: Added dedicated `🏛️ Corpus & Sites` tab to the computational research dashboard displaying active dataset composition, active corpus sites table with direct links to Explorer, reference benchmark sites roster, and primary source licensing details.
 - **Corpus Register Enhancements (`app/research/datasets/`, `app/research/datasets/[id]`)**: Upgraded dataset versioning index and detail views to present full corpus composition, site attribution tables, and bibliographic provenance cards.
-- **Frozen Dataset Immutability Preserved**: Verified that `DATASET-CISI-MOHENJODARO-V1` (UUID `00000000-0000-4000-8000-000000000181`, 179 inscriptions, 1,003 tokens, 182 distinct signs) remains untouched and strictly frozen.
+- Frozen Dataset Immutability Preserved**: Verified that `DATASET-CISI-MOHENJODARO-V1` (UUID `00000000-0000-4000-8000-000000000181`, 179 inscriptions, 1,003 tokens, 182 distinct signs) remains untouched and strictly frozen.
+
+### V2.6 — Evidence-grounded AI research assistant
+
+- **Architecture Built (`DATA → COMPUTATION → EVIDENCE → AI EXPLANATION`)**: Implemented an evidence-grounded research assistant allowing researchers to query corpus statistics and epigraphic observations through natural language without fabricating claims.
+- **Controlled Research Tools (`lib/ai/research-tools.ts`)**: Built 14 parameterized, injection-safe research tools strictly scoped to frozen dataset `DATASET-CISI-MOHENJODARO-V1` (`00000000-0000-4000-8000-000000000181`):
+  1. `getCorpusOverview()` (179 seals, 1,003 tokens, 182 signs, 1 corpus site, 9 reference sites).
+  2. `getSignFrequency(signCode?)` (P324: 99 occurrences, 9.87%; P122: 76 occurrences).
+  3. `getSignOccurrences(signCode, limit)` (matching seals with highlighted signs).
+  4. `getSignPositionalProfile(signCode)` (positions 1..5+, mean relative position).
+  5. `getTransitions(signCode, targetSign?, direction?)` (top successor P385 with 31, top predecessor P086 with 15).
+  6. `getMotifs(motifQuery?, length?)` (top trigram `P000 P122 P385` in 3 seals).
+  7. `getDuplicateSequences()` (2 duplicate groups across 5 seals).
+  8. `getNearDuplicateSequences()` (10 pairs with Levenshtein distance = 1).
+  9. `getOutliers(outlierType?)` (longest sequence: 14 signs in M-135A; 8 sequences with length $\ge 10$).
+  10. `getSiteCorpusStatus(siteQuery?)` (Mohenjo-daro active; Harappa reference-only; comparison held).
+  11. `getDatasetLimitations()` (epigraphic caveats, single-site scope).
+  12. `checkReadingDirectionAndCompleteness()` (completeness unrecorded; final token not certified physical end).
+  13. `searchInscriptions(query)` (search by stable ID or CISI seal ID).
+  14. `getUnsupportedQueryResponse(topic, targetSubject?)` (refuses translations, meanings, language, or word claims).
+- **Deterministic Question Router (`lib/ai/research-router.ts`)**: Implemented intent classification with regex entity extraction and conversational pronoun resolution ("it", "them", "those inscriptions"). Accurately mapped all 15 mandatory test questions. Zero arbitrary SQL generation.
+- **Structured Evidence Object (`lib/ai/evidence-format.ts`)**: Defined typed evidence format returning dataset metadata, claims, statistical denominators, record identifiers, limitations, and route links.
+- **Dual-Mode LLM Integration (`lib/ai/assistant-service.ts`)**: Supports Gemini 2.0 Flash when `GEMINI_API_KEY` is provided, and seamless fallback to deterministic academic evidence synthesis when unconfigured. Strict system prompts enforce research integrity and forbid translation or decipherment claims.
+- **Evidence-Citation UI (`components/features/research-assistant/`)**: Reusable components (`research-assistant.tsx`, `answer.tsx`, `evidence-card.tsx`, `evidence-stat.tsx`, `evidence-inscription.tsx`, `limitation-notice.tsx`, `suggested-question.tsx`) displaying structured claims, explicit denominators, and direct links to `/explorer/[id]`.
+- **Routes & Navigation (`app/research/assistant/`, `app/api/research/assistant/`)**: Created dedicated assistant page `/research/assistant` and API endpoint `/api/research/assistant`. Updated primary navigation and research hub with Assistant entry points.
+- **Verification Matrix**: Tested all 15 required questions and conversational follow-ups with 100% pass rate.
 
 ## Planned, not implemented
 
