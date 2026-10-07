@@ -177,22 +177,22 @@ This log distinguishes completed implementation from planned work. “Locally ve
   2. `getSignFrequency(signCode?)` (P324: 99 occurrences, 9.87%; P122: 76 occurrences).
   3. `getSignOccurrences(signCode, limit)` (matching seals with highlighted signs).
   4. `getSignPositionalProfile(signCode)` (positions 1..5+, mean relative position).
-  5. `getTransitions(signCode, targetSign?, direction?)` (top successor P385 with 31, top predecessor P086 with 15).
+  5. `getTransitions(signCode, targetSign?, direction?)` (top successor P385 with 29 occurrences / 38.2% conditional probability; empirical predecessors verified directly from database).
   6. `getMotifs(motifQuery?, length?)` (top trigram `P000 P122 P385` in 3 seals).
   7. `getDuplicateSequences()` (2 duplicate groups across 5 seals).
   8. `getNearDuplicateSequences()` (10 pairs with Levenshtein distance = 1).
-  9. `getOutliers(outlierType?)` (longest sequence: 14 signs in M-135A; 8 sequences with length $\ge 10$).
+  9. `getOutliers(outlierType?)` (longest sequence: 13 signs in INS-CISI-M-38A / INS-CISI-M-23A; 8 sequences with length $\ge 10$).
   10. `getSiteCorpusStatus(siteQuery?)` (Mohenjo-daro active; Harappa reference-only; comparison held).
   11. `getDatasetLimitations()` (epigraphic caveats, single-site scope).
   12. `checkReadingDirectionAndCompleteness()` (completeness unrecorded; final token not certified physical end).
   13. `searchInscriptions(query)` (search by stable ID or CISI seal ID).
-  14. `getUnsupportedQueryResponse(topic, targetSubject?)` (refuses translations, meanings, language, or word claims).
-- **Deterministic Question Router (`lib/ai/research-router.ts`)**: Implemented intent classification with regex entity extraction and conversational pronoun resolution ("it", "them", "those inscriptions"). Accurately mapped all 15 mandatory test questions. Zero arbitrary SQL generation.
+  14. `getUnsupportedQueryResponse(topic, targetSubject?)` (refuses translations, decipherment, meanings, language, or word claims).
+- **Deterministic Question Router (`lib/ai/research-router.ts`)**: Implemented intent classification with regex entity extraction and conversational pronoun resolution ("it", "them", "those inscriptions"). Accurately mapped all 15 mandatory test questions and unsupported inquiries (decipherment, translation, language, meaning). Zero arbitrary SQL generation.
 - **Structured Evidence Object (`lib/ai/evidence-format.ts`)**: Defined typed evidence format returning dataset metadata, claims, statistical denominators, record identifiers, limitations, and route links.
 - **Dual-Mode LLM Integration (`lib/ai/assistant-service.ts`)**: Supports Gemini 2.0 Flash when `GEMINI_API_KEY` is provided, and seamless fallback to deterministic academic evidence synthesis when unconfigured. Strict system prompts enforce research integrity and forbid translation or decipherment claims.
 - **Evidence-Citation UI (`components/features/research-assistant/`)**: Reusable components (`research-assistant.tsx`, `answer.tsx`, `evidence-card.tsx`, `evidence-stat.tsx`, `evidence-inscription.tsx`, `limitation-notice.tsx`, `suggested-question.tsx`) displaying structured claims, explicit denominators, and direct links to `/explorer/[id]`.
 - **Routes & Navigation (`app/research/assistant/`, `app/api/research/assistant/`)**: Created dedicated assistant page `/research/assistant` and API endpoint `/api/research/assistant`. Updated primary navigation and research hub with Assistant entry points.
-- **Verification Matrix**: Tested all 15 required questions and conversational follow-ups with 100% pass rate.
+- **V2.6 Final Audit & Integrity Hardening**: Fixed repository lookups (`lib/db/phase1-repository.ts`) to resolve both UUID and `stable_id` parameters preventing broken links across explorers and assistant cards; added explicit decipherment intent routing; ensured dynamic outlier claims; verified 100% test pass rate across all 15 research questions, conversational context, unsupported inquiries, and production routes.
 
 ## Planned, not implemented
 

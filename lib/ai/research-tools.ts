@@ -538,8 +538,8 @@ export async function getOutliers(outlierType?: "length" | "repetition" | "hapax
   const stats: EvidenceStatItem[] = [
     {
       label: "Longest Sequence in Dataset",
-      value: longestSeq ? `${longestSeq.length} signs` : "14 signs",
-      note: longestSeq ? `${longestSeq.inscriptionStableId.replace("INS-CISI-", "")} (${longestSeq.inscriptionStableId})` : "M-135A",
+      value: longestSeq ? `${longestSeq.length} signs` : "13 signs",
+      note: longestSeq ? `${longestSeq.inscriptionStableId.replace("INS-CISI-", "")} (${longestSeq.inscriptionStableId})` : "M-38A",
     },
     { label: "Length Outliers (≥ 10 signs)", value: lengthOutliers.length, note: ">2 SD above mean of 5.60" },
     { label: "Internal Repetition Outliers (≥ 2 repeats)", value: outliers.filter((o) => o.repeatCount >= 2).length },
@@ -555,11 +555,14 @@ export async function getOutliers(outlierType?: "length" | "repetition" | "hapax
     href: `/explorer/${o.inscriptionStableId}`,
   }));
 
+  const longestLabel = longestSeq ? `${longestSeq.inscriptionStableId.replace("INS-CISI-", "")} (${longestSeq.inscriptionStableId})` : "M-38A";
+  const longestCount = longestSeq ? longestSeq.length : 13;
+
   return {
     type: "outliers",
     dataset: FROZEN_DATASET_META,
-    claim: `The longest sequence in the dataset is 14 signs in inscription INS-CISI-M-135A (seal M-135A). There are 8 sequences with length ≥ 10 signs.`,
-    summary: `Mathematical outlier detection flags 8 inscriptions with sequence length ≥ 10 signs (> 2 standard deviations above the corpus mean of 5.60 signs). The single longest sequence is M-135A with 14 signs. Additional outliers include seals with multiple repeated internal signs (e.g. M-167A).`,
+    claim: `The longest sequence in the dataset is ${longestCount} signs in inscription ${longestLabel}. There are ${lengthOutliers.length} sequences with length ≥ 10 signs.`,
+    summary: `Mathematical outlier detection flags ${lengthOutliers.length} inscriptions with sequence length ≥ 10 signs (> 2 standard deviations above the corpus mean of 5.60 signs). The single longest sequence is ${longestLabel} with ${longestCount} signs. Additional outliers include seals with multiple repeated internal signs (e.g. M-167A).`,
     stats,
     records,
     limitations: [
@@ -799,8 +802,9 @@ export function getUnsupportedQueryResponse(
         : "The Indus script remains undeciphered. No verified meanings or definitions are associated with catalogued sign codes in this database. The platform provides formal computational and structural metrics only.";
       break;
 
+    case "decipherment":
     case "translation":
-      claim = "The research platform does not translate Indus script inscriptions.";
+      claim = "The research platform does not translate or decipher Indus script inscriptions.";
       summary =
         "The Indus script is an undeciphered writing system without a confirmed bilingual inscription (such as a Rosetta Stone) or verified phonetic key. The research platform is designed for evidence-grounded computational analysis and structural comparison, not translation or decipherment claims.";
       break;

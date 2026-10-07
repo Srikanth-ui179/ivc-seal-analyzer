@@ -195,22 +195,24 @@ export async function listObjects(options: ObjectQueryOptions = {}): Promise<Pag
 }
 
 export async function getObject(id: string): Promise<(ObjectDetail & { inscriptions: InscriptionSummary[]; catalogueIdentifiers: CatalogueIdentifierSummary[] }) | null> {
-  if (!isValidUuid(id)) return null;
+  if (!id || typeof id !== "string") return null;
   const result = await databaseQuery<ObjectDetail>(
-    `SELECT o.id, o.stable_id AS "stableId", o.record_scope AS "recordScope", o.status, o.object_type AS "objectType", o.material, o.collection_name AS "collectionName", o.collection_identifier AS "collectionIdentifier", o.current_location AS "currentLocation", o.height_mm::text AS "heightMm", o.width_mm::text AS "widthMm", o.depth_mm::text AS "depthMm", o.diameter_mm::text AS "diameterMm", o.condition_notes AS "conditionNotes", o.created_at AS "createdAt", o.updated_at AS "updatedAt", CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM objects o LEFT JOIN sites s ON s.id = o.site_id WHERE o.id = $1 AND o.record_scope = 'research'`,
+    `SELECT o.id, o.stable_id AS "stableId", o.record_scope AS "recordScope", o.status, o.object_type AS "objectType", o.material, o.collection_name AS "collectionName", o.collection_identifier AS "collectionIdentifier", o.current_location AS "currentLocation", o.height_mm::text AS "heightMm", o.width_mm::text AS "widthMm", o.depth_mm::text AS "depthMm", o.diameter_mm::text AS "diameterMm", o.condition_notes AS "conditionNotes", o.created_at AS "createdAt", o.updated_at AS "updatedAt", CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM objects o LEFT JOIN sites s ON s.id = o.site_id WHERE (o.id::text = $1 OR o.stable_id = $1) AND o.record_scope = 'research'`,
     [id]
   );
   const object = result.rows[0];
   if (!object) return null;
 
+  const realId = object.id;
+
   const inscriptionsRes = await databaseQuery<InscriptionSummary>(
     `SELECT i.id, i.stable_id AS "stableId", i.record_scope AS "recordScope", i.status, i.surface_label AS "surfaceLabel", i.image_reference AS "imageReference", i.image_rights_status AS "imageRightsStatus", i.condition_notes AS "conditionNotes", json_build_object('id', o.id, 'stableId', o.stable_id, 'objectType', o.object_type, 'material', o.material) AS object, sequence_data."primarySequence" FROM inscriptions i JOIN objects o ON o.id = i.object_id LEFT JOIN LATERAL (SELECT json_build_object('id', sq.id, 'stableId', sq.stable_id, 'recordScope', sq.record_scope, 'status', sq.status, 'sequenceBasis', sq.sequence_basis, 'sequenceVersion', sq.sequence_version, 'isPrimary', sq.is_primary, 'editorialNote', sq.editorial_note, 'tokens', COALESCE((SELECT json_agg(COALESCE(sg.catalogue_namespace || ':' || sg.catalogue_code, '[' || so.identification_status || ']') ORDER BY so.position_index) FROM sign_occurrences so LEFT JOIN signs sg ON sg.id = so.sign_id WHERE so.sequence_id = sq.id), '[]'::json)) AS "primarySequence" FROM sign_sequences sq WHERE sq.inscription_id = i.id ORDER BY sq.is_primary DESC, sq.sequence_basis, sq.sequence_version LIMIT 1) sequence_data ON true WHERE i.object_id = $1 ORDER BY i.surface_label`,
-    [id]
+    [realId]
   );
 
   const identsRes = await databaseQuery<CatalogueIdentifierSummary>(
     `SELECT catalogue_namespace AS "catalogueNamespace", identifier_text AS "identifierText", source_locator AS "sourceLocator", is_primary AS "isPrimary" FROM catalogue_identifiers WHERE subject_type = 'object' AND subject_id = $1 ORDER BY is_primary DESC, catalogue_namespace`,
-    [id]
+    [realId]
   );
 
   return {
@@ -250,17 +252,19 @@ export async function listInscriptions(options: InscriptionQueryOptions = {}): P
 }
 
 export async function getInscription(id: string): Promise<(InscriptionDetail & { catalogueIdentifiers: CatalogueIdentifierSummary[]; sourceRelease?: { releaseLabel: string; sourceTitle: string; rightsSummary: string | null } }) | null> {
-  if (!isValidUuid(id)) return null;
+  if (!id || typeof id !== "string") return null;
   const inscriptionResult = await databaseQuery<Omit<InscriptionDetail, "sequences" | "primarySequence">>(
-    `SELECT i.id, i.stable_id AS "stableId", i.record_scope AS "recordScope", i.status, i.surface_label AS "surfaceLabel", i.image_reference AS "imageReference", i.image_rights_status AS "imageRightsStatus", i.condition_notes AS "conditionNotes", i.created_at AS "createdAt", i.updated_at AS "updatedAt", json_build_object('id', o.id, 'stableId', o.stable_id, 'objectType', o.object_type, 'material', o.material) AS object, CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM inscriptions i JOIN objects o ON o.id = i.object_id LEFT JOIN sites s ON s.id = o.site_id WHERE i.id = $1 AND i.record_scope = 'research'`,
+    `SELECT i.id, i.stable_id AS "stableId", i.record_scope AS "recordScope", i.status, i.surface_label AS "surfaceLabel", i.image_reference AS "imageReference", i.image_rights_status AS "imageRightsStatus", i.condition_notes AS "conditionNotes", i.created_at AS "createdAt", i.updated_at AS "updatedAt", json_build_object('id', o.id, 'stableId', o.stable_id, 'objectType', o.object_type, 'material', o.material) AS object, CASE WHEN s.id IS NULL THEN NULL ELSE json_build_object('id', s.id, 'stableId', s.stable_id, 'canonicalName', s.canonical_name, 'modernRegion', s.modern_region, 'country', s.country) END AS site FROM inscriptions i JOIN objects o ON o.id = i.object_id LEFT JOIN sites s ON s.id = o.site_id WHERE (i.id::text = $1 OR i.stable_id = $1) AND i.record_scope = 'research'`,
     [id]
   );
   const inscription = inscriptionResult.rows[0];
   if (!inscription) return null;
 
+  const realId = inscription.id;
+
   const sequencesResult = await databaseQuery<RawSequence>(
     `SELECT id, stable_id AS "stableId", record_scope AS "recordScope", status, sequence_basis AS "sequenceBasis", sequence_version AS "sequenceVersion", is_primary AS "isPrimary", editorial_note AS "editorialNote" FROM sign_sequences WHERE inscription_id = $1 ORDER BY is_primary DESC, sequence_basis, sequence_version`,
-    [id]
+    [realId]
   );
   const sequenceIds = sequencesResult.rows.map((sequence) => sequence.id);
   const occurrenceResult = sequenceIds.length
@@ -293,12 +297,12 @@ export async function getInscription(id: string): Promise<(InscriptionDetail & {
 
   const identsRes = await databaseQuery<CatalogueIdentifierSummary>(
     `SELECT ci.catalogue_namespace AS "catalogueNamespace", ci.identifier_text AS "identifierText", ci.source_locator AS "sourceLocator", ci.is_primary AS "isPrimary" FROM catalogue_identifiers ci WHERE ci.subject_id = $1 OR ci.subject_id = (SELECT object_id FROM inscriptions WHERE id = $1) ORDER BY ci.is_primary DESC`,
-    [id]
+    [realId]
   );
 
   const releaseRes = await databaseQuery<{ releaseLabel: string; sourceTitle: string; rightsSummary: string | null }>(
     `SELECT cr.release_label AS "releaseLabel", src.title AS "sourceTitle", cr.rights_summary AS "rightsSummary" FROM sign_sequences sq JOIN corpus_releases cr ON cr.id = sq.corpus_release_id JOIN sources src ON src.id = cr.source_id WHERE sq.inscription_id = $1 LIMIT 1`,
-    [id]
+    [realId]
   );
 
   return {
@@ -341,22 +345,24 @@ export async function listSigns(options: SignQueryOptions = {}): Promise<Page<Si
 }
 
 export async function getSign(id: string): Promise<SignDetail | null> {
-  if (!isValidUuid(id)) return null;
+  if (!id || typeof id !== "string") return null;
   const result = await databaseQuery<SignDetail>(
-    `SELECT sg.id, sg.stable_id AS "stableId", sg.record_scope AS "recordScope", sg.status, sg.catalogue_namespace AS "catalogueNamespace", sg.catalogue_code AS "catalogueCode", sg.visual_label AS "visualLabel", sg.glyph_svg AS "glyphSvg", sg.visual_description AS "visualDescription", sg.image_reference AS "imageReference", sg.created_at AS "createdAt", sg.updated_at AS "updatedAt", CASE WHEN parent.id IS NULL THEN NULL ELSE json_build_object('id', parent.id, 'stableId', parent.stable_id, 'catalogueNamespace', parent.catalogue_namespace, 'catalogueCode', parent.catalogue_code, 'visualLabel', parent.visual_label) END AS "parentSign" FROM signs sg LEFT JOIN signs parent ON parent.id = sg.parent_sign_id WHERE sg.id = $1 AND sg.record_scope = 'research'`,
+    `SELECT sg.id, sg.stable_id AS "stableId", sg.record_scope AS "recordScope", sg.status, sg.catalogue_namespace AS "catalogueNamespace", sg.catalogue_code AS "catalogueCode", sg.visual_label AS "visualLabel", sg.glyph_svg AS "glyphSvg", sg.visual_description AS "visualDescription", sg.image_reference AS "imageReference", sg.created_at AS "createdAt", sg.updated_at AS "updatedAt", CASE WHEN parent.id IS NULL THEN NULL ELSE json_build_object('id', parent.id, 'stableId', parent.stable_id, 'catalogueNamespace', parent.catalogue_namespace, 'catalogueCode', parent.catalogue_code, 'visualLabel', parent.visual_label) END AS "parentSign" FROM signs sg LEFT JOIN signs parent ON parent.id = sg.parent_sign_id WHERE (sg.id::text = $1 OR sg.stable_id = $1 OR sg.catalogue_code = $1) AND sg.record_scope = 'research'`,
     [id]
   );
   const sign = result.rows[0];
   if (!sign) return null;
 
+  const realId = sign.id;
+
   const countRes = await databaseQuery<{ count: string }>(
     `SELECT count(*)::text AS count FROM sign_occurrences WHERE sign_id = $1`,
-    [id]
+    [realId]
   );
 
   const occRes = await databaseQuery<SignOccurrenceDetail>(
     `SELECT so.id, so.position_index AS "positionIndex", so.identification_status AS "identificationStatus", i.id AS "inscriptionId", i.stable_id AS "inscriptionStableId", i.surface_label AS "surfaceLabel", o.stable_id AS "objectStableId", o.id AS "objectId" FROM sign_occurrences so JOIN sign_sequences sq ON sq.id = so.sequence_id JOIN inscriptions i ON i.id = sq.inscription_id JOIN objects o ON o.id = i.object_id WHERE so.sign_id = $1 ORDER BY i.stable_id, so.position_index LIMIT 50`,
-    [id]
+    [realId]
   );
 
   return {
@@ -367,16 +373,17 @@ export async function getSign(id: string): Promise<SignDetail | null> {
 }
 
 export async function getSignSequence(id: string): Promise<SignSequenceDetail | null> {
-  if (!isValidUuid(id)) return null;
+  if (!id || typeof id !== "string") return null;
   const result = await databaseQuery<RawSequence & { inscription: SignSequenceDetail["inscription"] }>(
-    `SELECT sq.id, sq.stable_id AS "stableId", sq.record_scope AS "recordScope", sq.status, sq.sequence_basis AS "sequenceBasis", sq.sequence_version AS "sequenceVersion", sq.is_primary AS "isPrimary", sq.editorial_note AS "editorialNote", json_build_object('id', i.id, 'stableId', i.stable_id, 'surfaceLabel', i.surface_label, 'recordScope', i.record_scope) AS inscription FROM sign_sequences sq JOIN inscriptions i ON i.id = sq.inscription_id WHERE sq.id = $1 AND sq.record_scope = 'research'`,
+    `SELECT sq.id, sq.stable_id AS "stableId", sq.record_scope AS "recordScope", sq.status, sq.sequence_basis AS "sequenceBasis", sq.sequence_version AS "sequenceVersion", sq.is_primary AS "isPrimary", sq.editorial_note AS "editorialNote", json_build_object('id', i.id, 'stableId', i.stable_id, 'surfaceLabel', i.surface_label, 'recordScope', i.record_scope) AS inscription FROM sign_sequences sq JOIN inscriptions i ON i.id = sq.inscription_id WHERE (sq.id::text = $1 OR sq.stable_id = $1) AND sq.record_scope = 'research'`,
     [id]
   );
   const sequence = result.rows[0];
   if (!sequence) return null;
+  const realId = sequence.id;
   const occurrences = await databaseQuery<Record<string, unknown>>(
     `SELECT so.id, so.stable_id, so.record_scope, so.position_index, so.identification_status, so.observed_form_note, so.orientation_note, sg.id AS sign_id, sg.stable_id AS sign_stable_id, sg.catalogue_namespace, sg.catalogue_code, sg.visual_label, sg.glyph_svg FROM sign_occurrences so LEFT JOIN signs sg ON sg.id = so.sign_id WHERE so.sequence_id = $1 ORDER BY so.position_index`,
-    [id]
+    [realId]
   );
   const mapped = occurrences.rows.map(mapOccurrence);
   return {

@@ -60,6 +60,8 @@ export function routeQuestion(message: string, context?: AssistantContext): Rout
 
   // 1. UNSUPPORTED INQUIRIES (Integrity Safeguards)
   if (
+    norm.includes("decipher") ||
+    norm.includes("decipherment") ||
     norm.includes("translate") ||
     norm.includes("translation") ||
     norm.includes("how do you translate") ||

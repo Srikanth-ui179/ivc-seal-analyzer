@@ -47,7 +47,7 @@ function synthesizeEvidenceProse(intent: RoutedIntent, evidence: EvidenceObject)
       return `The active frozen dataset (${evidence.dataset.stableId}) contains 179 inscriptions, 1,003 sign tokens, and 182 distinct sign types. All 179 seals originate from Mohenjo-daro (CISI Volume 1, M-1 through M-199). In addition, 9 published archaeological sites are registered as reference-only geographic benchmarks with zero corpus inscriptions. 100% of the current 1,003 sign occurrences are catalogued as identified.`;
 
     case "sign_frequency": {
-      if (evidence.stats && evidence.stats.length >= 4) {
+      if (evidence.stats && evidence.stats.length >= 4 && evidence.stats[2]?.label?.includes("First-Position")) {
         const occ = evidence.stats[0].value;
         const pct = evidence.stats[0].percentage;
         const ins = evidence.stats[1].value;
