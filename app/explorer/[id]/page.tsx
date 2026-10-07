@@ -15,9 +15,26 @@ export default async function InscriptionDetailPage({ params }: { params: Promis
 
     return (
       <div className="page-shell py-14 sm:py-20">
-        <Link href="/explorer" className="text-sm font-semibold text-clay hover:text-ink">
-          ← Inscription explorer
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link href="/explorer" className="text-sm font-semibold text-clay hover:text-ink">
+            ← Inscription explorer
+          </Link>
+          <div className="flex items-center gap-3 text-xs">
+            <Link
+              href={`/research/dashboard?tab=duplicates`}
+              className="font-semibold text-clay hover:underline"
+            >
+              📊 Duplicates &amp; Motifs →
+            </Link>
+            <Link
+              href={`/research/assistant?q=Tell me about inscription ${inscription.stableId}`}
+              className="rounded border border-clay bg-clay px-2.5 py-1 font-semibold text-paper hover:bg-ink"
+            >
+              Ask Assistant →
+            </Link>
+          </div>
+        </div>
+
         <div className="mt-7">
           <Phase1RecordHeader
             eyebrow="Inscription record"
@@ -96,6 +113,14 @@ export default async function InscriptionDetailPage({ params }: { params: Promis
                 {inscription.sourceRelease.rightsSummary && (
                   <p className="mt-2 text-ink/55">{inscription.sourceRelease.rightsSummary}</p>
                 )}
+                <div className="mt-4 border-t border-ink/10 pt-3">
+                  <Link
+                    href="/research/datasets/DATASET-CISI-MOHENJODARO-V1"
+                    className="font-semibold text-clay hover:underline"
+                  >
+                    View Frozen Dataset Record →
+                  </Link>
+                </div>
               </div>
             )}
           </section>
@@ -110,29 +135,39 @@ export default async function InscriptionDetailPage({ params }: { params: Promis
             ) : (
               inscription.sequences.map((sequence) => (
                 <article key={sequence.id} className="panel p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-semibold">{sequence.isPrimary ? "Primary sequence" : "Alternative sequence"}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 pb-3">
+                    <p className="font-semibold text-base">{sequence.isPrimary ? "Primary sequence" : "Alternative sequence"}</p>
                     <p className="text-xs uppercase tracking-[0.12em] text-ink/55">
                       {sequence.sequenceBasis.replaceAll("_", " ")} · v{sequence.sequenceVersion}
                     </p>
                   </div>
 
                   <div className="mt-5">
-                    <p className="data-label mb-2">Graphemes (Right-to-Left recorded order):</p>
-                    <ol className="flex flex-wrap gap-2">
-                      {sequence.occurrences.map((occurrence) => (
-                        <li key={occurrence.id} className="rounded border border-ink/15 bg-sandstone/25 px-3 py-2 text-sm">
-                          {occurrence.sign ? (
-                            <Link
-                              href={`/sign-catalogue/${occurrence.sign.id}`}
-                              className="font-mono font-semibold text-clay hover:text-ink"
-                            >
-                              {occurrence.sign.catalogueCode}
-                            </Link>
-                          ) : (
-                            <span className="font-mono">[{occurrence.identificationStatus}]</span>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <p className="data-label">Grapheme Sequence ({sequence.occurrences.length} signs):</p>
+                      <span className="text-[11px] text-ink/50 font-mono">Right-to-Left recorded order</span>
+                    </div>
+
+                    <ol className="flex flex-wrap items-center gap-2">
+                      {sequence.occurrences.map((occurrence, idx) => (
+                        <li key={occurrence.id} className="flex items-center gap-2">
+                          <div className="flex flex-col items-center rounded border border-ink/15 bg-sandstone/25 px-3.5 py-2 text-sm shadow-xs transition hover:border-clay/60 hover:bg-sandstone/40">
+                            {occurrence.sign ? (
+                              <Link
+                                href={`/sign-catalogue/${occurrence.sign.id}`}
+                                className="font-mono font-bold text-clay hover:underline"
+                                title={`Inspect sign ${occurrence.sign.catalogueCode}`}
+                              >
+                                {occurrence.sign.catalogueCode}
+                              </Link>
+                            ) : (
+                              <span className="font-mono text-ink/60">[{occurrence.identificationStatus}]</span>
+                            )}
+                            <span className="mt-0.5 text-[0.65rem] font-mono text-ink/45">#{occurrence.positionIndex}</span>
+                          </div>
+                          {idx < sequence.occurrences.length - 1 && (
+                            <span className="font-bold text-ink/25 text-xs select-none" aria-hidden="true">→</span>
                           )}
-                          <span className="ml-1.5 text-[0.65rem] text-ink/40">#{occurrence.positionIndex}</span>
                         </li>
                       ))}
                     </ol>
@@ -146,6 +181,10 @@ export default async function InscriptionDetailPage({ params }: { params: Promis
                       {sequence.editorialNote}
                     </p>
                   )}
+
+                  <div className="mt-6 border-l-2 border-moss bg-sandstone/20 p-3 text-xs leading-relaxed text-ink/70">
+                    <strong>Epigraphic Safeguard:</strong> The sequence is displayed in source-recorded Right-to-Left order (Position 1 through {sequence.occurrences.length}). This represents catalogued transcription order in CISI Volume 1, not an inferred reading direction or linguistic syntax.
+                  </div>
                 </article>
               ))
             )}

@@ -194,6 +194,16 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - **Routes & Navigation (`app/research/assistant/`, `app/api/research/assistant/`)**: Created dedicated assistant page `/research/assistant` and API endpoint `/api/research/assistant`. Updated primary navigation and research hub with Assistant entry points.
 - **V2.6 Final Audit & Integrity Hardening**: Fixed repository lookups (`lib/db/phase1-repository.ts`) to resolve both UUID and `stable_id` parameters preventing broken links across explorers and assistant cards; added explicit decipherment intent routing; ensured dynamic outlier claims; verified 100% test pass rate across all 15 research questions, conversational context, unsupported inquiries, and production routes.
 
+### V2.7 — Final product polish & workflow integration
+
+- **Unified Research Navigation (`components/layout/site-header.tsx`)**: Upgraded main site header into a responsive navigation system supporting desktop and mobile. Added active route indicators, mobile menu drawer, and direct discoverability for all major hubs: Dashboard, Assistant, Analyze, Explorer, Sign Catalogue, Map, Datasets, and Research.
+- **Sign Detail Computational Profile (`app/sign-catalogue/[id]/page.tsx`)**: Enriched the visual sign catalogue record view with live computational statistics (total occurrences, corpus percentage, first-position frequency, mean relative position), positional distribution breakdown (positions 1..5+), top preceding and succeeding signs, contiguous motifs, and direct actions ("Ask Assistant about this sign", "Inspect in Sign Explorer", "Filter in Inscription Explorer").
+- **Directional Inscription Sequence Visualization (`app/explorer/[id]/page.tsx`)**: Upgraded inscription record sequences to display an intuitive directional progression (`P000 → P122 → P385`) with clickable graphemes leading directly to their sign catalogue records, dataset provenance links, and deep-linking into the AI Research Assistant.
+- **Research Dashboard Metrics Reconciliation (`components/dashboard/dashboard-overview.tsx`)**: Reconciled historical draft text with verified V2.6 database baseline (P122 → P385 count updated to 29 instances / 38.2% conditional probability; sequence length range updated to 1–13 signs). Added Assistant query callout banner.
+- **AI Research Assistant Deep-Linking (`components/features/research-assistant/research-assistant.tsx`, `app/research/assistant/page.tsx`)**: Added URL query parameter support (`?q=...`) to pre-fill or automatically submit queries when navigating from signs, inscriptions, or dashboard findings. Wrapped component in React `Suspense`.
+- **Branded 404 Experience (`app/not-found.tsx`)**: Implemented an academic, user-friendly 404 page explaining record/resource unavailability with fast routing back to Explorer, Sign Catalogue, Dashboard, and Home.
+- **Comprehensive Project Presentation (`README.md`)**: Rewrote project documentation communicating system architecture, verified corpus baseline, research capabilities, evidence-grounded AI approach, explicit epigraphic limitations, and live deployment links.
+
 ## Planned, not implemented
 
 - Phase 2 n-gram directional entropy and information-theoretic metrics requiring physical boundary grounding.

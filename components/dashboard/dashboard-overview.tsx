@@ -97,10 +97,10 @@ export function DashboardOverview({ report }: Props) {
           >
             <span className="text-[10px] font-bold uppercase tracking-wider text-moss">Strongest Adjacency</span>
             <p className="mt-1 font-display text-lg font-bold text-ink group-hover:text-clay">
-              P122 → P385 (31 instances)
+              P122 → P385 (29 instances)
             </p>
             <p className="mt-1 text-xs text-ink/65">
-              Occurs in 29 distinct seals. Accounts for 40.8% of all occurrences of P122.
+              Occurs in 29 distinct seals. Accounts for 38.2% of all occurrences of P122.
             </p>
             <span className="mt-3 block text-xs font-semibold text-clay group-hover:underline">
               Inspect transition evidence →
@@ -235,7 +235,7 @@ export function DashboardOverview({ report }: Props) {
                 2. Sequence Length Distribution (Histogram)
               </h3>
               <p className="text-xs text-ink/60">
-                Mean: 5.60 ± 2.05 signs · Median: 5.0 signs · Range: 1–14 signs.
+                Mean: 5.60 ± 2.05 signs · Median: 5.0 signs · Range: 1–13 signs.
               </p>
             </div>
             <span className="text-xs text-ink/50">N = 179 seals</span>
@@ -379,7 +379,7 @@ export function DashboardOverview({ report }: Props) {
             })}
           </div>
           <div className="mt-4 border-t border-ink/10 pt-3 text-[11px] text-ink/55">
-            P122 followed immediately by P385 is the most frequent observed bigram in the corpus (31 instances).
+            P122 followed immediately by P385 is the most frequent observed bigram in the corpus (29 instances).
           </div>
         </section>
       </div>
@@ -464,6 +464,23 @@ export function DashboardOverview({ report }: Props) {
             <span className="mt-4 text-xs font-semibold text-clay">Explore outliers →</span>
           </Link>
         </div>
+      </section>
+
+      {/* Research Assistant Callout Banner */}
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded border border-ink/15 bg-sandstone/25 p-5">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-clay">Natural Language Query</span>
+          <h4 className="mt-0.5 font-display text-base font-bold text-ink">Have a question about these patterns?</h4>
+          <p className="mt-1 text-xs text-ink/70">
+            Query sign frequencies, directional transitions, motifs, duplicates, and dataset boundaries using the Evidence-Grounded Research Assistant.
+          </p>
+        </div>
+        <Link
+          href="/research/assistant"
+          className="rounded border border-ink bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-paper hover:bg-moss"
+        >
+          Ask Research Assistant →
+        </Link>
       </section>
     </div>
   );

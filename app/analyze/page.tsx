@@ -129,12 +129,20 @@ export default async function AnalyzePage({ searchParams }: PageProps) {
               Explore signs, directional transitions, motifs, duplicates, and outliers with direct seal-by-seal evidence traceability in the Research Dashboard.
             </span>
           </div>
-          <Link
-            href="/research/dashboard"
-            className="rounded border border-ink bg-ink px-3 py-1.5 font-semibold text-paper hover:bg-moss"
-          >
-            Open Research Dashboard →
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/research/assistant"
+              className="rounded border border-clay bg-clay px-3 py-1.5 font-semibold text-paper hover:bg-ink"
+            >
+              Ask Assistant →
+            </Link>
+            <Link
+              href="/research/dashboard"
+              className="rounded border border-ink bg-ink px-3 py-1.5 font-semibold text-paper hover:bg-moss"
+            >
+              Research Dashboard →
+            </Link>
+          </div>
         </div>
 
         {/* ========================================================================= */}

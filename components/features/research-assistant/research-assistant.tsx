@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import type { AssistantContext, AssistantMessage } from "@/lib/ai/research-types";
 import { Answer } from "./answer";
 import { SuggestedQuestion } from "./suggested-question";
@@ -30,6 +31,8 @@ export function ResearchAssistant() {
   const [context, setContext] = useState<AssistantContext>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initialHandled = useRef(false);
+  const searchParams = useSearchParams();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,6 +41,16 @@ export function ResearchAssistant() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!initialHandled.current) {
+      const q = searchParams.get("q");
+      if (q && q.trim().length > 0) {
+        initialHandled.current = true;
+        handleSubmit(q.trim());
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (queryText?: string) => {
     const textToSend = (queryText ?? input).trim();

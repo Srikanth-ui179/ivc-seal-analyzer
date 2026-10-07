@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ResearchAssistant } from "@/components/features/research-assistant/research-assistant";
 
@@ -69,7 +70,9 @@ export default function ResearchAssistantPage() {
 
       {/* Interactive Research Assistant Workspace */}
       <div className="mt-10">
-        <ResearchAssistant />
+        <Suspense fallback={<div className="panel p-8 text-center text-sm text-ink/60">Loading Research Assistant...</div>}>
+          <ResearchAssistant />
+        </Suspense>
       </div>
     </div>
   );
