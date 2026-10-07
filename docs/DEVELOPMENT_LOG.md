@@ -204,11 +204,29 @@ This log distinguishes completed implementation from planned work. “Locally ve
 - **Branded 404 Experience (`app/not-found.tsx`)**: Implemented an academic, user-friendly 404 page explaining record/resource unavailability with fast routing back to Explorer, Sign Catalogue, Dashboard, and Home.
 - **Comprehensive Project Presentation (`README.md`)**: Rewrote project documentation communicating system architecture, verified corpus baseline, research capabilities, evidence-grounded AI approach, explicit epigraphic limitations, and live deployment links.
 
-## Planned, not implemented
+### V3.0 — Final capstone release & presentation package
 
-- Phase 2 n-gram directional entropy and information-theoretic metrics requiring physical boundary grounding.
-- Phase 3 model runs, predictions, hypotheses, or hypothesis evidence.
-- Expansion of corpus to additional sites (Harappa, Lothal, Kalibangan, etc.) as further digitized CISI/M77 data becomes verified and authorized.
-- Image and photographic asset integration.
-- Findspot-level mapping; available data remains at site-level reference-coordinate granularity.
-- Authentication, authorization, backups, deployment, and production monitoring.
+- **Presentation-Grade Documentation Suite (`README.md`, `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`)**:
+  - Formatted top-level `README.md` to presentation quality for GitHub visitors, recruiters, technical interviewers, and academic reviewers.
+  - Integrated verified empirical baseline statistics (179 inscriptions, 1,003 sign occurrences, 182 distinct sign types, 1 corpus site, 9 reference sites, P324 = 99, P122 = 76, P122 → P385 = 29, P086 → P122 = 1, sequence length range = 1–13, longest sequences include M-38A and M-23A).
+  - Explicitly categorized data layers: Database Facts, Computed Structural Observations, Source Metadata, and Scholarly Interpretation.
+  - Documented complete system architecture pipeline (`Corpus → PostgreSQL → Repository → Computational Analysis → Dashboard/Explorer → Traceability → AI Tools → Next.js → Vercel`).
+  - Detailed responsible AI architecture and articulated why the AI assistant operates through controlled parameterized tools rather than arbitrary SQL generation.
+  - Formulated explicit epigraphic limitations as intentional scholarly safeguards.
+- **Repository Audit & Release Hardening**:
+  - Updated package version to `3.0.0` in `package.json`.
+  - Documented optional `GEMINI_API_KEY` configuration and deterministic fallback behavior in `.env.example`.
+  - Audited Git working tree, confirming zero temporary artifacts, scratch scripts, or committed secrets.
+  - Verified 100% typecheck pass (`pnpm tsc --noEmit`) and production build optimization (`pnpm run build`).
+  - Executed full production route and API smoke tests on live Vercel deployment (`https://ivc-seal-analyzer-two.vercel.app`).
+- **Milestone Sign-Off**: Formally marked the platform as COMPLETE (v3.0.0 Capstone Release). Engineering development concluded.
+
+---
+
+## Post-Capstone Scholarly Boundaries
+
+The engineering lifecycle of the IVC Seal Analyzer is complete. Any potential future research extensions are subject to strict scholarly preconditions:
+
+- **Second-Site Ingestion:** Integrating Harappa or Lothal corpora only after official primary digitizations are authorized and cross-reconciled against Parpola sign standards.
+- **Physical Boundary Metadata:** Incorporating high-resolution orthophotography before exploring directional entropy or information-theoretic metrics.
+- **Non-Mutating Research Layer:** Preserving the immutable Phase 1 archaeological data model beneath any future scholarly annotation or hypothesis systems.

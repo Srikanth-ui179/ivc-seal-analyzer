@@ -1,66 +1,66 @@
-# Roadmap
+# Project Roadmap & Milestone History
 
-This roadmap is paced for a student building alongside college work, DSA practice, and AI/ML learning over roughly one year. It prioritizes a small, reliable research foundation over premature model-building.
+### Status: COMPLETE (v3.0.0 Final Capstone Release)
 
-## Phase 1 — archaeological data foundation
+The **IVC Seal Analyzer** project has concluded all engineering, computational, and documentation phases. The platform is complete, production-verified, and presented as a finalized student capstone research system.
 
-**Status: COMPLETE locally.**
+---
 
-- PostgreSQL 16 Docker development environment.
-- Source-aware archaeological/catalogue schema and integrity triggers.
-- Synthetic demo fixture policy and verification checks.
-- Server-only typed read repository.
-- Database-backed Inscription Explorer proof of concept.
+## Milestone Overview
 
-## Phase 2 — computational analysis
+| Milestone | Scope & Core Deliverables | Status |
+|---|---|:---:|
+| **V1** | **Research-Ready Corpus Explorer**<br>PostgreSQL 16 relational data model, source provenance assertions, server-only typed repository, Inscription Explorer, and entity detail views. | **COMPLETE** |
+| **V2.x** | **Research Infrastructure & Computational Analysis**<br>Archaeological site mapping (V2.1), foundational computational metrics M1–M5 (V2.2), advanced metrics M6–M11 (V2.3), interactive visual Research Dashboard (V2.4), and multi-site provenance gating (V2.5). | **COMPLETE** |
+| **V2.6** | **Evidence-Grounded AI Research Assistant**<br>Deterministic intent routing, 14 parameterized research tools, structured EvidenceObject generation, dual-engine prose synthesis (Gemini 2.0 Flash + deterministic fallback), and strict decipherment refusal safeguards. | **COMPLETE** |
+| **V2.7** | **Final Product Polish & Workflow Integration**<br>Responsive desktop and mobile navigation with drawer, enriched Sign Detail computational profiles, directional inscription sequence flows (`P000 → P122 → P385`), dashboard metric reconciliation, deep-linking into the AI assistant, and branded academic 404 page. | **COMPLETE** |
+| **V3.0** | **Final Capstone Release & Presentation Package**<br>Presentation-grade documentation, full architecture specification, repository audit, production deployment smoke test, and clean Git tag `v3.0.0`. | **COMPLETE** |
 
-**Status: in progress. Target: months 3–5.**
+---
 
-- Define versioned corpus/dataset selection. **Implemented in the repository:** frozen, scope-checked Phase 1 inscription snapshots with a read-only catalogue.
-- Authorized corpus delivery, staging, and provenance foundation. **Implemented in the repository:** migrations `0010`–`0014`, release metadata, immutable raw staging rows, catalogue identifiers, object relationships, visual sign variants, expanded assertion subjects, and verification suite.
-- M77 / IDF-80 corpus ingestion pipeline. **Implemented in the repository:** parser, validator, staging and transactional promotion services, specification (`docs/M77_INGESTION_SPECIFICATION.md`), CLI runner, and verification tests. *Real corpus import is awaiting authorized source file placement at `data/corpus/m77/m77_texts.csv`.*
-- Archaeological site map. **Implemented in V2.1:** a Leaflet map and accessible site register for published site-level reference coordinates, coordinate precision where recorded, corpus/reference-only coverage, site details, and Explorer filtering. It does not map individual artefact findspots; map tiles remain a CARTO/OpenStreetMap third-party dependency.
-- Computational sign analysis foundation. **Implemented in V2.2:** server-rendered `/analyze` route parameterized by frozen dataset version snapshots, delivering empirical sign frequency distributions, sequence length statistics, first-position and terminal-position frequencies with reading-direction safeguards, adjacent sign-pair frequencies (frequency ≥ 2), and mandatory corpus coverage reporting.
-- Advanced computational sign analysis. **Implemented in V2.3:** extended `/analyze` research dashboard with sign positional profiles & normalized relative distributions (M6), transition profiles for high-frequency signs with conditional predecessors and successors (M7), contiguous sequence motifs (length 3 trigrams, length 4 4-grams, initial combinations) with example identifiers (M8), sequence diversity and internal sign repetition metrics (M9), exact duplicate and near-duplicate sequence detection under Levenshtein edit distance (M10), and transparent rule-based structural outlier detection (M11).
-- Research dashboard and evidence exploration layer. **Implemented in V2.4:** interactive visual dashboard (`/research/dashboard`) enabling researchers to explore computational patterns and immediately trace them back to underlying inscriptions. Includes 5 responsive SVG charts, interactive Sign Explorer, Transition Explorer, Motif Explorer, Duplicate/Near-Duplicate Explorer, and Structural Outlier Explorer with 100% evidence traceability linking to `/explorer/[id]`.
-- Multi-site research foundation & corpus provenance register. **Implemented in V2.5:** extended source provenance schema (`db/migrations/0018_...`), explicit boundary between active Corpus Sites and Reference-Only Benchmark Sites, multi-site analysis engine (`lib/db/multisite-repository.ts`) with comparative metrics gating when $< 2$ corpus sites exist, interactive `🏛️ Corpus & Sites` dashboard tab (`components/dashboard/sites-explorer.tsx`), enhanced dataset register (`/research/datasets`), and complete immutability of `DATASET-CISI-MOHENJODARO-V1`.
-- Evidence-grounded AI research assistant. **Implemented in V2.6:** interactive natural-language interface (`/research/assistant`, `app/api/research/assistant`) grounded strictly in database evidence and verified computational analysis. Features controlled parameterized research tools (`lib/ai/research-tools.ts`), deterministic intent classification (`lib/ai/research-router.ts`), common structured evidence objects (`lib/ai/evidence-format.ts`), rich evidence citation cards (`components/features/research-assistant/`), and strict research safeguards prohibiting decipherment, translation, phonetic values, or linguistic readings.
-- Final product polish & workflow integration. **Implemented in V2.7:** unified research navigation on desktop and mobile with active route indicators, mobile menu drawer, enriched sign detail experience with computational and positional distributions, directional inscription sequence flows with clickable graphemes, dashboard metric reconciliation against verified V2.6 baseline, cross-workflow deep-linking into the AI Research Assistant, custom research 404 page, and finalized project presentation.
-- Present computational observations as measurements with methods and uncertainty, never as translations.
-- Add tests using transaction-scoped synthetic fixtures or properly sourced records; do not persist demo archaeological records in the research database.
+## Detailed Milestone Records
 
+### V1 — Research-Ready Corpus Explorer
+- **Relational Archaeological Data Model:** Source-aware entities (`sources`, `sites`, `objects`, `inscriptions`, `signs`, `sign_sequences`, `sign_occurrences`, `archaeological_assertions`) preserving catalogued uncertainty and competing provenance claims.
+- **Strict Scope Boundaries:** PostgreSQL trigger-enforced isolation separating `research` records from `demo` fixtures.
+- **Server-Only Data Access:** Parameterized PostgreSQL repository (`lib/db/phase1-repository.ts`) with connection pooling, avoiding client-side credential exposure.
+- **Database-Backed Explorer:** Search, filter, and pagination interface over authentic Mohenjo-daro inscriptions (`/explorer`).
+- **Entity Detail Views:** Dedicated read-only detail routes for inscriptions, visual sign catalogue entries, objects, and archaeological sites.
 
-## Phase 3 — AI/ML capabilities
+### V2.x — Research Infrastructure & Computational Analysis
+- **V2.1 (Archaeological Site Map):** Interactive Leaflet map (`/map`) and accessible site register displaying published reference coordinates, recorded coordinate precision, and clear demarcation between active corpus sites and reference benchmarks.
+- **V2.2 (Computational Analysis Baseline):** Empirical metrics M1 through M5 (`/analyze`) delivering sign frequency distributions, sequence length statistics, initial-position frequencies, adjacent sign-pair frequencies, and corpus coverage reporting.
+- **V2.3 (Advanced Computational Metrics):** Extended metrics M6 through M11 introducing sign positional distributions, conditional transition matrices, contiguous sequence motifs (trigrams, 4-grams), sequence diversity, exact and near-duplicates (Levenshtein distance = 1), and transparent rule-based structural outlier detection.
+- **V2.4 (Interactive Research Dashboard):** Comprehensive visual workspace (`/research/dashboard`) featuring 5 responsive SVG charts and interactive drill-down explorers with 100% evidence traceability linking directly to underlying inscriptions.
+- **V2.5 (Multi-Site Research Foundation):** Explicit multi-site schema and comparative analysis engine (`lib/db/multisite-repository.ts`) with programmatic gating that holds comparative cross-site statistics until an authorized second site is ingested. Frozen dataset immutability verified for `DATASET-CISI-MOHENJODARO-V1`.
 
-**Status: planned. Target: months 6–9.**
+### V2.6 — Evidence-Grounded AI Research Assistant
+- **Strict Architecture Pipeline:** Four-layer data flow (`DATA → COMPUTATION → EVIDENCE → AI EXPLANATION`).
+- **14 Controlled Research Tools:** Parameterized SQL functions (`lib/ai/research-tools.ts`) answering corpus overview, frequencies, positional profiles, transitions, motifs, duplicates, outliers, site statuses, and methodological limitations. Zero arbitrary SQL generation.
+- **Deterministic Intent Router:** Regex-driven intent classification (`lib/ai/research-router.ts`) with conversational pronoun resolution ("it", "them", "those inscriptions") and safe refusal of decipherment, translation, language, and meaning requests.
+- **Common Evidence Format:** Typed `EvidenceObject` (`lib/ai/evidence-format.ts`) with explicit statistical denominators, record identifiers, limitations, and route links.
+- **Dual-Mode Synthesis:** Server-side Google Gemini 2.0 Flash integration with automatic, seamless fallback to deterministic academic synthesis when unconfigured.
+- **Evidence-Citation UI:** Reusable components (`components/features/research-assistant/`) embedding interactive `EvidenceCard` widgets into conversational answers.
 
-- Learn image annotation, computer-vision evaluation, and sequence-modelling fundamentals.
-- Establish data licensing and annotation review workflows before training.
-- Add versioned model runs and reviewable predictions.
-- Start with narrow, evaluable tasks such as image-region classification or visual-sign retrieval.
-- Keep predictions separate from records and require reviewer status/uncertainty.
+### V2.7 — Final Product Polish & Workflow Integration
+- **Unified Navigation:** Responsive header (`components/layout/site-header.tsx`) with active state indicators and mobile drawer menu.
+- **Enriched Sign Detail:** Computational profile section (`app/sign-catalogue/[id]/page.tsx`) with positional histograms, top transitions, motifs, and deep-link actions.
+- **Directional Sequence Progression:** Sequence visualization (`app/explorer/[id]/page.tsx`) with clear arrow progression (`P000 → P122 → P385`) and clickable graphemes.
+- **Metrics Reconciliation:** Dashboard overview copy aligned with verified V2.6 baseline (P122 → P385 = 29 occurrences / 38.2%; sequence length range = 1–13 signs).
+- **Assistant Deep-Linking:** URL query parameter support (`?q=...`) allowing direct queries from sign records, inscriptions, or dashboard findings.
+- **Branded 404 Page:** Custom error page (`app/not-found.tsx`) offering direct navigation recovery.
 
-## Phase 4 — research and evaluation
+### V3.0 — Final Capstone Release & Presentation Package
+- **Final Architecture & Documentation:** Presentation-grade `README.md`, `ARCHITECTURE.md`, and `PROJECT.md` formatted for academic reviewers, recruiters, and technical interviewers.
+- **Codebase Freeze:** Zero unverified additions; frozen dataset verified. Clean Git commit and production tag `v3.0.0`.
+- **Engineering Completion Sign-Off:** The project is fully delivered and ready for capstone presentation and technical interview defense.
 
-**Status: planned. Target: months 9–11.**
+---
 
-- Build reproducible evaluation datasets and metrics.
-- Support explicitly labelled hypotheses with supporting/challenging evidence.
-- Add scholarly review notes, export formats, and methodology documentation.
-- Test reliability, provenance coverage, and failure cases before making research claims.
+## Future Scope (Post-Capstone Boundaries)
 
-## Phase 5 — deployment and polish
+Any potential post-capstone scholarly work would require strict methodological preconditions:
 
-**Status: planned. Target: months 11–12.**
-
-- Harden database backups, environment configuration, and access control.
-- Deploy the Next.js app and managed PostgreSQL service.
-- Improve responsive exploration, accessibility, loading states, and error reporting.
-- Publish a clear limitations statement and contributor/developer documentation.
-
-## Ongoing habits
-
-- Keep weekly work small and testable.
-- Maintain DSA and AI/ML study separately from production claims.
-- Prefer a documented experiment over a broad but unreproducible feature.
-- Do not advance a phase merely because a UI can be demonstrated; advance it when data, methods, and evaluation are defensible.
+1. **Second-Site Authorized Corpus Ingestion:** Ingesting verified Harappa or Lothal datasets only after primary digitizations are authorized and aligned to the Parpola sign catalogue.
+2. **Physical Boundary Metadata:** Incorporating high-resolution photographic orthophotos and physical boundary records before exploring directional entropy or information-theoretic metrics.
+3. **Scholarly Review Layer:** Supporting versioned academic annotations and hypothesis tracking as separate, non-mutating layers on top of the immutable archaeological foundation.

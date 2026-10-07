@@ -1,236 +1,246 @@
-# Architecture
+# System Architecture & Technical Specification
 
-## Guiding boundary
+### Version: v3.0.0 — Final Capstone Release
 
-The stable archaeological/catalogue layer is the source of truth. Computational observations, model predictions, and hypotheses are future layers that may reference Phase 1 records but must never rewrite them.
+---
 
-## Application structure
+## 1. Architectural Philosophy & Guiding Principles
 
-```text
-app/                  Next.js routes and page composition
-components/           Reusable layout, UI, and feature components
-data/                 Current frontend mock data used outside the DB proof of concept
-lib/db/               Server-only PostgreSQL client, typed entities, repositories
-lib/ingestion/        Server-side corpus delivery, staging, validation, and promotion tooling
-db/migrations/        Ordered PostgreSQL migrations
-db/seeds/             Synthetic demo fixtures only
-db/scripts/           SQL verification checks
-scripts/              PowerShell migration, health, verification, and ingestion runners
-docker-compose.yml    Local PostgreSQL 16 service
-```
+The **IVC Seal Analyzer** is architected around one foundational scholarly principle: **Method Before Model**.
 
-The current frontend uses Next.js App Router. Most pages remain presentational and may use `data/mock-research.ts`; the Inscription Explorer and its read-only inscription, sign, object, and site detail routes are database-backed Phase 1 views. They do not substitute mock archaeological records when the database is unavailable.
+Because the Indus Valley script remains undeciphered, the computational architecture enforces strict, non-negotiable boundaries between:
 
-## Server-side database access
+1. **Database Facts:** Verified, catalogued physical and epigraphic records from primary publications (e.g., CISI Vol. 1, Parpola et al., 1987).
+2. **Computed Structural Observations:** Empirical mathematical and statistical patterns calculated over immutable transcriptions (e.g., positional frequencies, transition counts, edit distances).
+3. **Source Metadata:** Bibliographic, archival, licensing, and methodological provenance.
+4. **Scholarly Interpretations:** Theoretical hypotheses, reading-direction conjectures, or comparative linguistic theories.
 
-`lib/db/client.ts` imports `server-only`, creates a pooled `pg` client, and reads `DATABASE_URL` only on the server. No client component may import this code, and no database credential may use a `NEXT_PUBLIC_` name.
+Under no circumstances does a higher layer mutate, rewrite, or synthesize records in a lower layer.
 
-`lib/db/types.ts` defines typed Phase 1 entities and paginated response shapes. `lib/db/phase1-repository.ts` contains parameterized read queries for sites, objects, inscriptions, signs, sequences, and occurrences. Its list functions support bounded pagination and limited filters.
+---
 
-`lib/db/dataset-version-repository.ts` is the small Phase 2 repository boundary. It reads frozen corpus snapshots only; it does not calculate observations or run models.
+## 2. End-to-End System Architecture
 
-The Explorer page is dynamic server-rendered and reads research-scoped records only. Staging rows and internal demo scope records are never exposed through the research UI.
-
-### Archaeological site map
-
-`/map` is a dynamic, database-backed map of research-scoped archaeological sites. `listSitesForMap` returns site-level coordinates, recorded coordinate precision, and research object/inscription counts. The client-only Leaflet component validates latitude (`-90..90`) and longitude (`-180..180`) before creating a marker; invalid values are excluded from the canvas without preventing the site register from rendering.
-
-The map presents site-level archaeological reference coordinates, not individual artefact or inscription findspots. Coordinate precision, when recorded, describes the published site datum and does not increase the precision of an artefact location. Corpus sites have one or more research records; reference-only sites are published site records with zero corpus objects and inscriptions. The accompanying accessible site register provides the same coordinate, precision, coverage, and site-detail links without requiring map interaction. Site-detail links and the Explorer's `siteId` filter use the site record identifier.
-
-Leaflet is dynamically imported to avoid server rendering browser APIs. The default basemap uses OpenStreetMap, with visible OpenStreetMap attribution; deployments may override the tile URL and attribution through public map environment variables (`NEXT_PUBLIC_MAP_TILE_URL`, `NEXT_PUBLIC_MAP_TILE_ATTRIBUTION`). Tile availability and terms remain a third-party dependency. Leaflet popup content is built with DOM text nodes, so database values are never inserted as raw HTML.
-
-## Local database service
-
-`docker-compose.yml` runs a named PostgreSQL 16 container, `indusscript-ai-postgres`, with a persistent named volume. The workspace is mounted read-only at `/workspace` so `psql` inside the container can execute migrations. The Compose health check uses `pg_isready`.
-
-Migration scripts record completed filenames in `schema_migrations`, run files in lexical/numerical order, and skip already-applied migrations. Do not edit a migration that has been applied to a shared database; add a new ordered migration instead.
-
-## Phase 1 data model
+The complete system pipeline flows sequentially from primary archaeological records to the deployed production interface:
 
 ```text
-Source ──< archaeological_assertion >── Site | Object | Inscription | Sign occurrence
-
-Site 1 ──< Object 1 ──< Inscription 1 ──< Sign sequence 1 ──< Sign occurrence >── 1 Sign
+Corpus / Source Data (CISI Mohenjo-daro / Carlson 2023 Digitization)
+        │
+        ▼
+PostgreSQL 16 Relational Engine (Docker Compose Local & Neon Serverless Production)
+        │
+        ▼
+Repository / Data-Access Layer (`lib/db/` — Server-Only, Parameterized Queries)
+        │
+        ▼
+Computational Analysis Engine (`lib/db/analysis-repository.ts` — Metrics M1..M11)
+        │
+        ▼
+Research Dashboard & Inscription Explorer (`/research/dashboard`, `/explorer`)
+        │
+        ▼
+Evidence Traceability Layer (`EvidenceObject`, Record Identifiers, Denominators)
+        │
+        ▼
+Evidence-Grounded AI Research Assistant (`lib/ai/` — 14 Controlled Research Tools)
+        │
+        ▼
+Next.js Production Application (App Router, Server Components, Route Handlers)
+        │
+        ▼
+Vercel Edge & Cloud Hosting (`https://ivc-seal-analyzer-two.vercel.app`)
 ```
 
-Implemented tables:
+---
 
-- `sources`: bibliographic, catalogue, archive, or other provenance references.
-- `sites`: archaeological location records.
-- `objects`: physical objects that may carry inscriptions.
-- `inscriptions`: discrete inscribed surfaces/faces of an object.
-- `signs`: strictly visual/catalogue sign forms; no semantic, language, phonetic, or translation fields.
-- `sign_sequences`: versioned source transcriptions, editorial normalizations, or alternative readings.
-- `sign_occurrences`: ordered sign positions and identification status within a sequence.
-- `archaeological_assertions`: source-specific claims that do not overwrite the stable entity record.
+## 3. Strict Layer Isolation & Research Integrity
 
-### Provenance and uncertainty
+### Why the AI Assistant Has No Unrestricted Database Access
 
-`archaeological_assertions` has a polymorphic `(subject_type, subject_id)` reference. A PostgreSQL trigger validates that the declared subject exists in the appropriate supported table and that the assertion source has matching scope. This preserves competing source-backed assertions rather than flattening them into one asserted truth.
+In many modern LLM architectures, an agent is given direct access to a database through arbitrary Text-to-SQL generation. In an academic research tool for an undeciphered script, **unrestricted Text-to-SQL is unacceptable** for three critical reasons:
 
-`record_scope` is either `research` or `demo`. Demo rows require `DEMO-` stable identifiers, and PostgreSQL triggers prevent cross-scope links. `record_status`, assertion certainty, sequence basis, and sign identification status retain uncertainty and alternatives explicitly.
+1. **Hallucination of Linguistic Significance:** An unconstrained model writing ad-hoc SQL might group tokens based on unstated linguistic assumptions (e.g., treating frequent pairs as "words" or suffixes), conflating statistical co-occurrence with linguistic structure.
+2. **Denominational Distortion:** Without strict, predefined denominators, an LLM might calculate percentages against fluctuating subsets (e.g., ignoring broken seals, conflating complete with incomplete sequences, or calculating probabilities over mixed corpora).
+3. **Reproducibility Failure:** Two researchers asking the same question might receive queries with different `WHERE` clauses, invalidating the scientific reproducibility of published findings.
 
-## Future-layer separation
+### Controlled Research Tools Architecture
 
-### Phase 2 dataset versions
+To solve this, the AI Assistant operates exclusively through **14 parameterized, injection-safe research tools** implemented in `lib/ai/research-tools.ts`:
 
 ```text
-Dataset version 1 ──< dataset_version_inscriptions >── 1 Phase 1 inscription
+User Question
+     │
+     ▼
+Deterministic Intent Router (`lib/ai/research-router.ts`)
+     │ (Regex classification, entity extraction, pronoun resolution)
+     ▼
+Controlled Parameter Set (e.g., signCode: 'P122', limit: 10)
+     │
+     ▼
+Parameterized Repository Query (`lib/db/analysis-repository.ts`)
+     │ (Scoped strictly to DATASET-CISI-MOHENJODARO-V1)
+     ▼
+Structured Evidence Object (`lib/ai/evidence-format.ts`)
+     │ (Typed claims, verified denominators, record IDs, limitations)
+     ▼
+Prose Synthesis Engine (`lib/ai/assistant-service.ts`)
+     │ (Gemini 2.0 Flash or Deterministic Academic Synthesizer)
+     ▼
+Evidence-Citation UI (`EvidenceCard` with direct links to `/explorer/[id]`)
 ```
 
-`dataset_versions` records a selection definition, scope, lifecycle state, and freeze time. `dataset_version_inscriptions` records the exact included Phase 1 inscription IDs. A trigger requires matching `record_scope`; therefore a demo dataset cannot contain research inscriptions, or vice versa.
+Every response embeds an `EvidenceCard` that links directly to underlying physical seals, allowing researchers to verify every claim against the primary archaeological catalogue.
 
-Dataset versions begin as `draft` while membership is assembled. They can be frozen only when they contain at least one inscription. Frozen dataset versions and their membership are immutable: a changed selection requires a new version. They are Phase 2 reproducibility metadata, not archaeological facts.
+---
 
-The read-only dataset catalogue is available at `/research/datasets`.
-
-### Phase 2 corpus delivery, staging, and provenance
+## 4. Application Structure & Module Boundaries
 
 ```text
-Authorized corpus delivery
-  → corpus_releases
-  → corpus_release_files
-  → corpus_ingestion_runs
-  → immutable corpus_staging_rows
-  → validation/reconciliation
-  → Phase 1 production records + provenance
-  → QA
-  → frozen research dataset
-  → reproducible analysis runs
+ivc-seal-analyzer/
+├── app/                              # Next.js App Router routes & server pages
+│   ├── api/research/assistant/       # POST Route Handler for AI research queries
+│   ├── explorer/                     # Inscription Explorer & [id] detail page
+│   ├── sign-catalogue/               # Visual Sign Catalogue & [id] detail page
+│   ├── research/
+│   │   ├── assistant/                # Interactive AI Research Assistant interface
+│   │   ├── dashboard/                # Computational Research Dashboard (5 SVG charts)
+│   │   └── datasets/                 # Dataset & Provenance Register & [id] detail
+│   ├── analyze/                      # Comprehensive M1..M11 Analysis Workspace
+│   ├── map/                          # Leaflet Archaeological Site Map & Register
+│   ├── layout.tsx                    # Root layout with responsive header & metadata
+│   ├── page.tsx                      # Landing page with hero, stats, and workflows
+│   └── not-found.tsx                 # Branded academic 404 recovery page
+├── components/                       # Modular UI components
+│   ├── dashboard/                    # SVG charts, Sign, Transition, Motif, & Outlier Explorers
+│   ├── features/research-assistant/  # Assistant chat UI, Answer, EvidenceCard, & Stat badges
+│   ├── layout/                       # Responsive site-header with mobile drawer navigation
+│   └── ui/                           # Badges, buttons, cards, tabs, and layout primitives
+├── lib/                              # Core backend and business logic
+│   ├── ai/                           # AI assistant pipeline
+│   │   ├── assistant-service.ts      # Dual-mode synthesis (Gemini + Deterministic fallback)
+│   │   ├── evidence-format.ts        # Typed EvidenceObject interfaces and creators
+│   │   ├── gemini-client.ts          # Native Node.js REST client for Gemini 2.0 Flash
+│   │   ├── research-router.ts        # Deterministic intent routing & pronoun resolution
+│   │   ├── research-tools.ts         # 14 controlled research tools wrapping DB queries
+│   │   └── research-types.ts         # Intent types, tool arguments, and assistant responses
+│   └── db/                           # Server-only database access layer
+│       ├── client.ts                 # Pooled pg client (`server-only`)
+│       ├── types.ts                  # TypeScript entity definitions (Sites, Inscriptions, Signs)
+│       ├── phase1-repository.ts      # Read queries for primary archaeological entities
+│       ├── analysis-repository.ts    # Computational metrics engine (M1 through M11)
+│       ├── analysis-types.ts         # Statistical shapes (histograms, transitions, motifs)
+│       ├── multisite-repository.ts   # Multi-site comparison engine with gating safeguards
+│       └── dataset-version-repository.ts # Frozen dataset snapshot metadata & rosters
+├── db/                               # Relational database schema & migrations
+│   ├── migrations/                   # 18 ordered SQL migration files (0001..0018)
+│   └── seeds/                        # Synthetic demo fixtures (isolated to DEMO scope)
+├── docs/                             # Engineering & architectural documentation
+│   ├── ARCHITECTURE.md               # This system architecture specification
+│   ├── PROJECT.md                    # Project purpose, boundaries, and status
+│   ├── ROADMAP.md                    # Milestone progression from V1 to V3.0
+│   └── DEVELOPMENT_LOG.md            # Detailed chronological engineering changelog
+└── docker-compose.yml                # Local PostgreSQL 16 container definition
 ```
 
-Implemented tables (migrations `0010`–`0014`):
+---
 
-- `corpus_releases`: delivery and release metadata, authorization status (`pending`, `authorized`, `restricted`, `withdrawn`), provider details, rights, and licence references.
-- `corpus_release_files`: delivered file catalogue with SHA-256 checksums, byte sizes, and functional file roles (`source_data`, `data_dictionary`, `licence_or_permission`, `documentation`, `other`).
-- `corpus_ingestion_runs`: tracked ingestion lifecycles (`staged`, `validated`, `promoted`, `rejected`), importer versions, manifest checksums, and transition validations.
-- `corpus_staging_rows`: immutable format-agnostic raw delivered payloads (`raw_payload`, `raw_payload_sha256`, `source_row_key`) held in raw JSONB prior to validation/reconciliation into Phase 1 tables.
-- `catalogue_identifiers`: polymorphic external catalogue numbers (`subject_type`, `subject_id`, `catalogue_namespace`, `identifier_text`, `is_primary`) for sites, objects, inscriptions, signs, and sign variants.
-- `object_relationships`: source-backed archaeological object relationships (`impression_of`, `possible_same_die_as`, `physical_duplicate_of`, `cast_of`, `other_source_described`) with certainty levels and self-reference protection.
-- `sign_variants` & `sign_variant_assignments`: visual variant forms linked to canonical catalogue signs via source-backed assignments without assigning semantic, phonetic, or translation meanings.
-- Extended `sign_sequences` & `sign_occurrences`: preserves exact source transcriptions, line labels, reading directions, layout types, completeness, and exact source token texts and markers.
-- Expanded `archaeological_assertions`: polymorphic subject types expanded to include `sign`, `sign_sequence`, `sign_variant`, and `object_relationship` with strict scope verification.
+## 5. Relational Database Layer (PostgreSQL 16)
 
-### Phase 2 computational sign analysis
-
-`/analyze` is a server-rendered analysis workspace parameterized by frozen dataset version snapshots (`lib/db/analysis-repository.ts`, `lib/db/analysis-types.ts`). Every measurement query joins explicitly on `dataset_version_inscriptions` rather than using a broad `record_scope = 'research'` shortcut.
-
-Implemented measurements:
-- **M5. Corpus & identification coverage**: token counts and percentages by epigraphic certainty status (`identified`, `tentative`, `unidentified`, `damaged`); sequence counts by source completeness status.
-- **M1. Sign frequency distribution**: ranked frequencies and corpus shares for identified tokens; tentative/unidentified/damaged forms monitored in separate visible panels.
-- **M2. Sequence length distribution**: summary statistics (min, max, median, mean, sample standard deviation) and frequency histogram; complete and incomplete subsets separated.
-- **M3. Positional frequencies**: first-position frequency based on source-recorded `position_index = 1`; terminal-position frequency gated strictly to `source_completeness = 'complete'`. Highlights that catalogue transcription order is not an inferred reading direction.
-- **M4. Adjacent sign-pair frequency**: empirical co-occurrence frequency of consecutive identified positions (`pos` and `pos + 1`). Gaps or non-identified tokens break pairs. Filtered by threshold `frequency >= 2`.
-- **M6. Sign positional profiles & normalized relative position**: for frequent signs (threshold: total occurrences ≥ 10), reports distribution across positions 1, 2, 3, 4, 5+ and normalized relative position (`position_index / sequence_length` on sequences of length ≥ 2; mean and sample standard deviation). Characterizes formal positional clustering without assigning grammatical prefix/suffix roles.
-- **M7. Immediate sign transitions (predecessors & successors)**: for high-frequency signs (total occurrences ≥ 20), reports top immediately preceding signs (pos - 1) and succeeding signs (pos + 1) with transition conditional probabilities over non-boundary positions. Co-occurrence counts reflect recorded transcription adjacency only.
-- **M8. Contiguous sequence motifs & initial combinations**: contiguous subsequences of lengths 2, 3, and 4 occurring ≥ 2 times across the corpus, with occurrence counts, inscription counts, and example identifiers. Terminal motifs are explicitly gated/noted as incomplete due to unrecorded sequence completeness.
-- **M9. Sequence diversity & internal sign repetition**: corpus-level diversity summary (100% unique-sign sequences vs sequences with repeated signs; mean diversity ratio) and identification of signs occurring multiple times on a single inscribed surface.
-- **M10. Sequence duplicates & near-duplicates**: identifies exact identical sequences across multiple inscriptions, as well as near-duplicate sequence pairs differing by Levenshtein edit distance = 1 on sequences of length ≥ 3 (classified by insertion, deletion, or substitution).
-- **M11. Measurable structural outliers**: rule-based detection of statistical anomalies (>2 standard deviations above mean length [length ≥ 10], internal duplicate count ≥ 2, or high density of corpus-unique hapax legomena signs).
-
-Boundary constraints: All outputs are empirical observations on transcribed catalogue tokens; no decipherment, phonetic, semantic, or translation claims. Computed results are dynamically evaluated from the frozen dataset and not stored as database records.
-
-### Phase 2 research dashboard & visual exploration layer (V2.4)
-
-`/research/dashboard` provides an interactive visual exploration and evidence-traceability layer on top of the computational analysis engine (`components/dashboard/`, `lib/db/analysis-repository.ts`).
-
-Core architecture and UX flow:
-```
-Dashboard overview & visualizations
-  ↓
-Interesting pattern (sign, transition, motif, duplicate, outlier)
-  ↓
-Pattern detail & relative distribution metrics
-  ↓
-Underlying inscriptions (complete enumeration with target highlight)
-  ↓
-Object & archaeological context (/explorer/[id])
-  ↓
-Site datum & published provenance (/sites/[id], /objects/[id])
-```
-
-Interactive exploration modules:
-- **Corpus overview & key findings**: summary cards, 5 responsive SVG/Tailwind visualizations (Sign Frequency bar chart, Sequence Length histogram, Positional Skew comparative profile, Dominant Adjacency transitions chart, and Contiguous Motifs frequency breakdown).
-- **Sign Explorer**: detailed sign profile (occurrences, corpus %, initial frequency, positional breakdown across positions 1–5+, mean relative position ± SD), frequent predecessors and successors, motifs containing the sign, and the **complete list of underlying inscriptions** containing the selected sign with the sign highlighted in each sequence.
-- **Transition Explorer**: directed adjacency transitions (`Sign 1 → Sign 2`), co-occurrence frequencies, conditional probabilities $P(\text{succ} \mid \text{pred})$, and **complete enumeration of underlying inscriptions** with the adjacent pair highlighted in context.
-- **Motif Explorer**: contiguous n-grams (Trigrams of length 3, 4-Grams of length 4, and Initial 2-sign prefix-like patterns) with interactive badges linking directly to every matching seal.
-- **Duplicate & Near-Duplicate Explorer**: side-by-side comparative inspection of exact sequence duplicate groups (e.g. M-110A, M-175A, M-19A) and Levenshtein edit distance = 1 near-duplicate pairs with direct links to both seals.
-- **Structural Outlier Explorer**: rule-based inspection of statistical outliers (length ≥ 10, multiple internal duplicates, hapax legomena density) with transparent criteria and direct links to `/explorer/[id]`.
-- **Evidence Traceability Guarantee**: Every computational observation provides direct links to the physical seals and digitized records responsible for that observation.
-
-### Phase 2 multi-site research foundation & provenance register (V2.5)
-
-V2.5 establishes the multi-site computational foundation, enriched source provenance schema, and corpus register without fabricating data or breaking frozen dataset immutability:
-
-- **Source Provenance Schema (`db/migrations/0018_...`)**: Extended `sources` table to capture archive/repository (`repository_or_archive`), license framework (`licence_name`, `licence_url`), corpus scope (`corpus_scope`), archaeological scope (`archaeological_scope`), catalogue system (`catalogue_system`), transcription system (`transcription_system`), sign numbering convention (`sign_numbering_convention`), checksums, limitations, and bibliographic notes.
-- **Corpus Sites vs. Reference-Only Sites**: Clarifies the epigraphic boundary between **Corpus Sites** (sites with active, verified inscription sequences in the frozen dataset) and **Reference-Only Sites** (geographic benchmark datums from Possehl 2002, ASI, and UNESCO with published coordinates but 0 ingested corpus sequences). Coordinates on the map or in the database never imply corpus membership.
-- **Dynamic Dataset Breakdown (`lib/db/dataset-version-repository.ts`)**: Evaluates site composition and source provenance dynamically via relational joins through `dataset_version_inscriptions`, ensuring `DATASET-CISI-MOHENJODARO-V1` remains permanently frozen and immutable.
-- **Multi-Site Analysis Engine & Safeguard (`lib/db/multisite-repository.ts`)**: Implements `getMultiSiteReport()`. If $\ge 2$ corpus sites exist, it computes cross-site metrics (inscription counts, token counts, vocabulary size, length distributions, shared vs. site-specific signs). If $< 2$ corpus sites exist, cross-site comparative statistics are strictly gated and held, with an explicit methodological disclosure explaining that comparative claims require an authorized, verified second site corpus.
-- **Corpus & Sites Dashboard View (`components/dashboard/sites-explorer.tsx`)**: Integrates into `/research/dashboard?tab=sites`, providing researchers with full visibility into dataset composition, active corpus sites, reference benchmarks, primary sources, and licensing.
-- **Corpus Register & Detail Enhancement (`app/research/datasets/`, `app/research/datasets/[id]`)**: Renders full bibliographic source cards, licensing links, catalogue systems, site breakdown tables, and member inscription rosters.
-
-### Phase 2 evidence-grounded AI research assistant (V2.6)
-
-V2.6 introduces an interactive natural-language research interface at `/research/assistant` and `/api/research/assistant` grounded strictly in database records and computational analysis:
+### Core Archaeological Entities
 
 ```text
-USER QUESTION
-      ↓
-QUESTION INTERPRETATION & ROUTER (Deterministic classification, parameter extraction, contextual reference)
-      ↓
-CONTROLLED RESEARCH TOOLS (Parameterized SQL queries scoped to DATASET-CISI-MOHENJODARO-V1)
-      ↓
-STRUCTURED EVIDENCE OBJECT (Typed claims, denominators, record identifiers, limitations, explorer links)
-      ↓
-PROSE GENERATION / SYNTHESIS (Academic formatting grounded strictly in supplied evidence)
-      ↓
-EVIDENCE-CITATION UI (Observation vs Interpretation distinction + EvidenceCard drill-down to Explorer)
+Source ──< archaeological_assertion >── Site | Object | Inscription | Sign Occurrence
+
+Site 1 ──< Object 1 ──< Inscription 1 ──< Sign Sequence 1 ──< Sign Occurrence >── 1 Sign
 ```
 
-1. **Research Tool Layer (`lib/ai/research-tools.ts`, `lib/ai/evidence-format.ts`, `lib/ai/research-types.ts`)**:
-   - `getCorpusOverview()`: Overall dataset state, 179 inscriptions, 1,003 tokens, 182 distinct signs, site breakdown.
-   - `getSignFrequency(signCode?)`: Exact sign token counts, corpus percentages, and initial-position counts.
-   - `getSignOccurrences(signCode, limit)`: Bounded listing of matching inscriptions with highlighted sign positions.
-   - `getSignPositionalProfile(signCode)`: Formal positional distribution across positions 1..5+ and mean relative position.
-   - `getTransitions(signCode, targetSign?, direction?)`: Predecessor and successor frequencies and conditional probabilities.
-   - `getMotifs(motifQuery?, length?)`: Contiguous trigrams and 4-grams with complete inscription enumeration.
-   - `getDuplicateSequences()`: Exact identical sequence groups across distinct physical seals.
-   - `getNearDuplicateSequences()`: Near-duplicate sequence pairs under Levenshtein edit distance = 1.
-   - `getOutliers(outlierType?)`: Length outliers ($\ge 10$ signs) and multiple internal repetition outliers.
-   - `getSiteCorpusStatus(siteQuery?)`: Delineation between Mohenjo-daro (179 seals) and reference-only sites (0 seals).
-   - `getDatasetLimitations()`: Epigraphic and sampling caveats (completeness unrecorded, RTL catalogue order).
-   - `checkReadingDirectionAndCompleteness()`: Safeguard explaining terminal position cannot be certified as physical edge.
-   - `searchInscriptions(query)`: Exact search by stable ID or CISI seal ID.
-   - `getUnsupportedQueryResponse(topic, targetSubject?)`: Safe handling of translation, meaning, language, or word requests.
+- `sources`: Primary publications, archive records, and license documentation.
+- `sites`: Archaeological site datums with published latitude/longitude and coordinate precision.
+- `objects`: Physical inscribed artefacts (e.g., square steatite stamp seals, copper tablets).
+- `inscriptions`: Discrete inscribed faces/surfaces of an object.
+- `signs`: Canonical visual catalogue entries (Parpola `P-001` through `P-417`). Strictly visual; no semantic or phonetic columns.
+- `sign_sequences`: Published sign transcriptions, line labels, and layout structures.
+- `sign_occurrences`: Individual sign tokens ordered by 1-based index within an inscription sequence.
+- `archaeological_assertions`: Source-attributed assertions with certainty ratings, preserving competing scholarly claims without overwriting stable entity records.
 
-2. **Deterministic Question Routing (`lib/ai/research-router.ts`)**:
-   - Strict pattern matching and entity extraction (sign codes `P-NNN`, sequences, inscription IDs).
-   - Contextual reference resolution (mapping pronouns "it", "them", "those inscriptions" to previous `activeSign`).
-   - Zero unrestricted SQL generation: all user inquiries map exclusively to controlled parameter sets.
+### Provenance & Ingestion Staging
 
-3. **Common Evidence Format (`lib/ai/evidence-format.ts`)**:
-   - Every tool returns a structured `EvidenceObject` with `dataset`, `claim`, `summary`, `stats` (with explicit denominators), `records` (with links to `/explorer/[id]`), `limitations`, and `links`.
+Migrations `0010` through `0018` introduce strict ingestion provenance tables:
 
-4. **Academic Prose & Research Safeguards (`lib/ai/assistant-service.ts`)**:
-   - Dual-engine architecture: attempts Gemini Flash synthesis if `GEMINI_API_KEY` is present; seamlessly falls back to deterministic academic evidence synthesis if absent or failing.
-   - Prohibits all claims of decipherment, translation, phonetic values, grammatical roles, word boundaries, or language identity.
-   - Explicitly distinguishes **Observation** (computational fact) from **Interpretation** (linguistic hypothesis).
+- `corpus_releases`: Delivered archive metadata, provider details, rights, and license references.
+- `corpus_release_files`: Delivered file catalogue with SHA-256 checksums and functional roles.
+- `corpus_ingestion_runs`: Tracked ingestion lifecycles (`staged`, `validated`, `promoted`, `rejected`).
+- `corpus_staging_rows`: Format-agnostic raw JSONB payloads preserving delivered data.
+- `catalogue_identifiers`: External cross-catalogue numbers (e.g., Mahadevan M-77 numbers vs. Parpola CISI numbers).
+- `sign_variants`: Visual sign glyph variations linked to canonical signs without semantic claims.
 
-5. **Evidence-Citation UI (`components/features/research-assistant/`)**:
-   - `research-assistant.tsx`: Conversational workspace with message thread, suggested research questions, and context tracking.
-   - `answer.tsx`: Displays natural-language answer with Observation badge and embedded `EvidenceCard`.
-   - `evidence-card.tsx`: Rich citation box presenting dataset badge, claim, statistics grid, record links, and methodological limitations.
+### Frozen Dataset Snapshots
 
-### Not implemented
+```text
+dataset_versions 1 ──< dataset_version_inscriptions >── 1..* Inscriptions
+```
 
-The following are intentionally **not implemented**:
+All computational analysis and AI research queries are parameterized by immutable dataset snapshots:
 
-- Decipherment, translation, or phonetic prediction.
-- Syntactic trees, grammatical parts of speech, or word/phrase identification.
-- Directional entropy or information-theoretic metrics requiring un-truncated physical grounding.
-- Model runs, embeddings, clustering, and neural network predictions.
-- AI hypotheses and hypothesis evidence.
-- Fabricated cross-site statistical comparisons (cross-site comparative statistics are held until an authorized second site is ingested and verified).
-- Semantic or phonetic assignments.
+- **Active Dataset:** `DATASET-CISI-MOHENJODARO-V1` (UUID: `00000000-0000-4000-8000-000000000181`)
+- **Freeze Policy:** Once frozen, a dataset snapshot cannot be altered. Changes require a new version identifier.
+- **Relational Joins:** Every analytical query joins explicitly through `dataset_version_inscriptions`, guaranteeing that experimental or staging data never contaminates published research metrics.
 
-When introduced in future phases, they must be their own versioned tables and services. They may reference Phase 1 stable IDs and evidence, but must not mutate archaeological facts, source assertions, visual catalogue records, or published sequence alternatives.
+---
+
+## 6. Computational Analysis Engine (`lib/db/analysis-repository.ts`)
+
+The computational engine calculates 11 standardized empirical metrics (M1 through M11):
+
+| Metric | Code | Description & Epigraphic Safeguards |
+|---|---|---|
+| **Coverage** | **M5** | Distribution of token identification certainty (`identified`, `tentative`, `unidentified`, `damaged`). |
+| **Frequency** | **M1** | Ranked sign frequencies, corpus shares, and cumulative distributions. |
+| **Sequence Length** | **M2** | Summary statistics (min, max, median, mean: 5.60 ± 2.05) and histogram over 1–13 signs. |
+| **Positional Skew** | **M3** | Initial-position (Pos 1) frequency. Terminal-position metrics are gated due to unrecorded completeness. |
+| **Adjacency** | **M4** | Co-occurrence frequency of adjacent identified tokens ($pos$ and $pos + 1$). Threshold: $\ge 2$. |
+| **Positional Profiles** | **M6** | Breakdown across positions 1, 2, 3, 4, 5+ and normalized relative position ($pos / length$). |
+| **Transitions** | **M7** | Predecessor ($pos - 1$) and successor ($pos + 1$) matrices with conditional transition probabilities. |
+| **Sequence Motifs** | **M8** | Contiguous n-grams of lengths 2, 3, and 4 occurring $\ge 2$ times (e.g., `P000 P122 P385` in 3 seals). |
+| **Diversity & Repetition** | **M9** | Corpus uniqueness ratios and identification of signs repeated on a single inscribed face. |
+| **Duplicates** | **M10** | Exact identical sequences across distinct seals and near-duplicates (Levenshtein distance = 1). |
+| **Structural Outliers** | **M11** | Rule-based outlier flags (length $\ge 10$, multiple internal repeats, hapax legomena density). |
+
+---
+
+## 7. Evidence-Grounded AI Assistant Architecture
+
+### 14 Controlled Research Tools
+
+The assistant exposes 14 strictly typed, parameterized tools in `lib/ai/research-tools.ts`:
+
+1. `getCorpusOverview()`: Overall corpus statistics, active vs reference site counts.
+2. `getSignFrequency(signCode?)`: Occurrence counts, corpus share %, initial position counts.
+3. `getSignOccurrences(signCode, limit)`: Bounded listing of matching inscriptions with position highlights.
+4. `getSignPositionalProfile(signCode)`: Formal distribution across positions 1..5+ and mean relative position.
+5. `getTransitions(signCode, targetSign?, direction?)`: Directed predecessors and successors with probabilities.
+6. `getMotifs(motifQuery?, length?)`: Contiguous trigrams and 4-grams with complete inscription enumeration.
+7. `getDuplicateSequences()`: Exact identical sequence groups across distinct physical seals.
+8. `getNearDuplicateSequences()`: Near-duplicate sequence pairs under Levenshtein edit distance = 1.
+9. `getOutliers(outlierType?)`: Length outliers ($\ge 10$ signs) and internal repetition anomalies.
+10. `getSiteCorpusStatus(siteQuery?)`: Delineation between Mohenjo-daro and reference-only benchmark sites.
+11. `getDatasetLimitations()`: Epigraphic and sampling caveats (completeness unrecorded, RTL catalogue order).
+12. `checkReadingDirectionAndCompleteness()`: Safeguard explaining terminal position cannot be certified as physical edge.
+13. `searchInscriptions(query)`: Exact search by stable identifier or CISI seal ID.
+14. `getUnsupportedQueryResponse(topic, targetSubject?)`: Safe handling of translation, meaning, language, or word requests.
+
+### Dual-Engine Synthesis Pipeline
+
+To guarantee uninterrupted availability without requiring mandatory cloud API keys:
+
+1. **Google Gemini 2.0 Flash:** When `GEMINI_API_KEY` is configured in the environment, the server invokes Gemini via a native Node.js REST client (`lib/ai/gemini-client.ts`). The prompt injects the verified `EvidenceObject` and enforces an academic, objective persona strictly forbidding ungrounded speculation.
+2. **Deterministic Academic Synthesizer:** If `GEMINI_API_KEY` is missing or fails, the platform seamlessly falls back to a deterministic academic prose generator. This generator synthesizes structured academic prose containing all statistical denominators, findings, and limitation notices directly from the `EvidenceObject`.
+
+---
+
+## 8. Security & Environment Configuration
+
+- **Server-Only Enforcement:** Database connection logic in `lib/db/client.ts` uses `import "server-only"`. Any attempt to import database code into client components produces a compile-time build failure.
+- **Zero Client Credential Exposure:** Database URLs and AI API keys are never prefixed with `NEXT_PUBLIC_`.
+- **Parameterized SQL:** All queries execute through parameter arrays `$1, $2, ...` in node-postgres. String interpolation in SQL is strictly forbidden.
+- **Third-Party Boundary:** Map tiles use OpenStreetMap/CARTO web tile servers loaded dynamically on the client with explicit attribution. Leaflet DOM popup content is assembled using DOM text nodes to prevent cross-site scripting (XSS).
